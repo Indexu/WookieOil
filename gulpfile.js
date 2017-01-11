@@ -6,6 +6,12 @@ gulp.task('sass', function () {
         .pipe(sass())
         .pipe(gulp.dest(function (f) {
             return "resources/css/";
+        }));
+
+    gulp.src('vendors/materialize/sass/materialize.scss')
+        .pipe(sass())
+        .pipe(gulp.dest(function (f) {
+            return "vendors/materialize/css/";
         }))
 });
 
