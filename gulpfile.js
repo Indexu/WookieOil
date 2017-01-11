@@ -1,20 +1,42 @@
+// Dependencies
 var gulp = require('gulp');
 var sass = require('gulp-sass');
+var browserSync = require('browser-sync').create();
 
+// Sass
 gulp.task('sass', function () {
-    gulp.src('resources/sass/*.scss')
+    return gulp.src('app/resources/sass/*.scss')
         .pipe(sass())
-        .pipe(gulp.dest(function (f) {
-            return "resources/css/";
+        .pipe(gulp.dest("app/resources/css/"))
+        .pipe(browserSync.reload({
+            stream: true
         }));
 
-    gulp.src('vendors/materialize/sass/materialize.scss')
+    return gulp.src('app/vendors/materialize/sass/materialize.scss')
         .pipe(sass())
-        .pipe(gulp.dest(function (f) {
-            return "vendors/materialize/css/";
-        }))
+        .pipe(gulp.dest("app/vendors/materialize/css/"))
+        .pipe(browserSync.reload({
+            stream: true
+        }));
 });
 
-gulp.task('default', ['sass'], function () {
-    gulp.watch('resources/sass/*.scss', ['sass']);
+// BrowserSync
+gulp.task('browserSync', function () {
+    browserSync.init({
+        server: {
+            baseDir: 'app'
+        },
+    })
 })
+
+// Watch
+gulp.task('watch', function () {
+    gulp.watch('app/resources/sass/*.scss', ['sass']);
+    gulp.watch('app/*.html', browserSync.reload);
+    gulp.watch('app/js/**/*.js', browserSync.reload);
+});
+
+// Default
+gulp.task('default', ['browserSync', 'sass', 'watch'], function () {
+    // Stuff
+});
