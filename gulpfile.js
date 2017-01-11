@@ -9,13 +9,15 @@ var cssnano = require("gulp-cssnano");
 // Sass
 gulp.task("sass", function () {
     return gulp.src("app/resources/sass/*.scss")
+        .pipe(plumber())
         .pipe(sass())
         .pipe(gulp.dest("app/resources/css/"))
         .pipe(browserSync.reload({
             stream: true
         }));
 
-    return gulp.src("app/vendors/materialize/sass/materialize.scss")
+    return gulp.src('app/vendors/materialize/sass/materialize.scss')
+        .pipe(plumber())
         .pipe(sass())
         .pipe(gulp.dest("app/vendors/materialize/css/"))
         .pipe(browserSync.reload({
@@ -35,6 +37,7 @@ gulp.task("browserSync", function () {
 // Scripts - concatinate and uglify all js files
 gulp.task("scripts", function () {
     return gulp.src("app/resources/js/**/*.js")
+        .pipe(plumber())
         .pipe(concat("scripts.min.js"))
         .pipe(uglify())
         .pipe(gulp.dest("app/dist/scripts"));
@@ -43,6 +46,7 @@ gulp.task("scripts", function () {
 // Styles - concatinate and minify all css files
 gulp.task("styles", function () {
     return gulp.src("app/resources/css/**/*.css")
+        .pipe(plumber())
         .pipe(concat("style.min.css"))
         .pipe(cssnano())
         .pipe(gulp.dest("app/dist/css"));
