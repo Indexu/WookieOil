@@ -1,11 +1,13 @@
 // Dependencies
 var gulp = require('gulp');
 var sass = require('gulp-sass');
+var plumber = require('gulp-plumber');
 var browserSync = require('browser-sync').create();
 
 // Sass
 gulp.task('sass', function () {
     return gulp.src('app/resources/sass/*.scss')
+        .pipe(plumber())
         .pipe(sass())
         .pipe(gulp.dest("app/resources/css/"))
         .pipe(browserSync.reload({
@@ -13,6 +15,7 @@ gulp.task('sass', function () {
         }));
 
     return gulp.src('app/vendors/materialize/sass/materialize.scss')
+        .pipe(plumber())
         .pipe(sass())
         .pipe(gulp.dest("app/vendors/materialize/css/"))
         .pipe(browserSync.reload({
