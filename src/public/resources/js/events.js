@@ -1,23 +1,3 @@
-var settings = {
-    viewCanvas: $("#viewCanvas"),
-    viewContext: $("#viewCanvas")[0].getContext("2d"),
-    editCanvas: $("#editCanvas"),
-    editContext: $("#editCanvas")[0].getContext("2d"),
-    nextObj: "rectangle",
-    nextColor: "black",
-    currentObj: undefined,
-    mouseX: 0,
-    mouseY: 0
-};
-class Shape {
-    constructor(x, y, color) {
-        this.x = x;
-        this.y = y;
-        this.endX = x;
-        this.endY = y;
-        this.color = color;
-    }
-}
 // Edit - mousedown
 settings.editCanvas.on("mousedown", function (e) {
 
@@ -67,32 +47,3 @@ settings.editCanvas.on("mouseup", function (e) {
     // Remove the current object
     settings.currentObj = undefined;
 });
-// Update mouse coordinates in settings
-function updateMousePosition(e) {
-    if (e.offsetX) {
-        settings.mouseX = e.offsetX;
-        settings.mouseY = e.offsetY;
-    } else if (e.layerX) {
-        settings.mouseX = e.layerX;
-        settings.mouseY = e.layerY;
-    }
-}
-
-// Clear a canvas
-function clearCanvas(canvas, context) {
-    context.clearRect(0, 0, canvas.width, canvas.height);
-}
-class Rectangle extends Shape {
-    constructor(x, y, color) {
-        super(x, y, color);
-    }
-
-    setEnd(x, y) {
-        this.endX = x;
-        this.endY = y;
-    }
-
-    draw(context) {
-        context.strokeRect(this.x, this.y, this.endX - this.x, this.endY - this.y);
-    }
-}

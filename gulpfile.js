@@ -6,6 +6,7 @@ var concat = require("gulp-concat");
 var uglify = require("gulp-uglify");
 var cssnano = require("gulp-cssnano");
 var plumber = require("gulp-plumber");
+var del = require("del");
 
 // Sass
 gulp.task("sass", function () {
@@ -16,7 +17,10 @@ gulp.task("sass", function () {
         .pipe(browserSync.reload({
             stream: true
         }));
+});
 
+// Materialize
+gulp.task("materialize", function () {
     return gulp.src("src/public/vendors/materialize/sass/materialize.scss")
         .pipe(plumber())
         .pipe(sass())
@@ -38,11 +42,27 @@ gulp.task("browserSync", function () {
 
 // Scripts - concatinate and uglify all js files
 gulp.task("scripts", function () {
-    return gulp.src("src/public/resources/js/**/*.js")
+    return gulp.src("src/public/resources/js/scripts.js")
         .pipe(plumber())
         .pipe(concat("scripts.min.js"))
         .pipe(uglify())
         .pipe(gulp.dest("src/public/dist/scripts"));
+});
+
+// Dev scripts - concatinate all js files
+gulp.task("dev_scripts", function () {
+
+    del.sync("src/public/resources/js/scripts.js");
+
+    return gulp.src([
+            "src/public/resources/js/master.js",
+            "src/public/resources/js/utilites.js",
+            "src/public/resources/js/entities/shape.js",
+            "src/public/resources/js/**/*.js"
+        ])
+        .pipe(plumber())
+        .pipe(concat("scripts.js"))
+        .pipe(gulp.dest("src/public/resources/js"));
 });
 
 // Styles - concatinate and minify all css files
@@ -55,18 +75,19 @@ gulp.task("styles", function () {
 });
 
 // Build
-gulp.task("build", ["scripts", "styles"], function () {
+gulp.task("build", ["dev_scripts", "scripts", "styles"], function () {
     // Stuff
 });
 
 // Watch
 gulp.task("watch", function () {
     gulp.watch("src/public/resources/sass/*.scss", ["sass"]);
+    gulp.watch("src/public/vendors/materialize/sass/**/*.scss", ["materialize"]);
+    gulp.watch(["src/public/resources/js/**/*.js", "!src/public/resources/js/scripts.js"], ["dev_scripts"]);
     gulp.watch("src/public/*.html", browserSync.reload);
-    gulp.watch("src/public/js/**/*.js", browserSync.reload);
 });
 
 // Default
-gulp.task("default", ["browserSync", "sass", "watch"], function () {
+gulp.task("default", ["browserSync", "materialize", "sass", "dev_scripts", "watch"], function () {
     // Stuff
 });
