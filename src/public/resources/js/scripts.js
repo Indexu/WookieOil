@@ -6,6 +6,8 @@ var settings = {
     nextObj: "rectangle",
     nextColor: "black",
     currentObj: undefined,
+    undo: [],
+    redo: [],
     mouseX: 0,
     mouseY: 0
 };
@@ -13,6 +15,16 @@ var settings = {
 // Update object based on selected tool
 $("input[name='tool']").change(function () {
     settings.nextObj = $(this).val();
+});
+
+// Undo button
+$("#undo").on("click", function () {
+    undo(settings.viewCanvas[0], settings.viewContext);
+});
+
+// Redo button
+$("#redo").on("click", function () {
+    redo(settings.viewCanvas[0], settings.viewContext);
 });
 class Shape {
     constructor(x, y, color) {
@@ -80,6 +92,12 @@ settings.editCanvas.on("mouseup", function (e) {
 
         // Remove the current object
         settings.currentObj = undefined;
+
+        // Push to undo
+        settings.undo.push(settings.viewContext.getImageData(0, 0, settings.viewCanvas[0].width, settings.viewCanvas[0].height));
+
+        // Empty redo
+        settings.redo = [];
     }
 });
 // Update mouse coordinates in settings
@@ -96,6 +114,43 @@ function updateMousePosition(e) {
 // Clear a canvas
 function clearCanvas(canvas, context) {
     context.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+// Undo
+function undo(canvas, context) {
+    // Make sure that there is something to undo
+    if (settings.undo.length !== 0) {
+        // Pop from undo
+        var img = settings.undo.pop();
+
+        // Push to redo
+        settings.redo.push(img);
+
+        // Display if something to display
+        if (settings.undo.length !== 0) {
+            var display = settings.undo[settings.undo.length - 1];
+            context.putImageData(display, 0, 0);
+        }
+        // Nothing to display
+        else {
+            clearCanvas(canvas, context);
+        }
+
+    }
+}
+
+// Redo
+function redo(canvas, context) {
+    // Make sure that there is something to redo
+    if (settings.redo.length !== 0) {
+        // Pop from redo
+        var img = settings.redo.pop();
+
+        // Push to undo
+        settings.undo.push(img);
+
+        context.putImageData(img, 0, 0);
+    }
 }
 class Line extends Shape {
     constructor(x, y, color) {
