@@ -4,7 +4,7 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0" />
-        <title>Starter Template - Materialize</title>
+        <title>WookieOil</title>
         <!-- CSS  -->
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
         <link href="vendors/materialize/css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection" />
@@ -12,6 +12,7 @@
     </head>
 
     <body>
+        <!-- Header -->
         <header class="navbar-fixed" style="z-index: 999">
             <nav class="light-blue lighten-1" role="navigation">
                 <div class="nav-wrapper container">
@@ -19,9 +20,20 @@
                 </div>
             </nav>
         </header>
+        <!-- Main -->
         <main>
             <div class="container">
                 <div class="row"></div>
+                <!-- Toolbar -->
+                <div class="row">
+                    <div class="col s8 offset-s2">
+                        <input name="tool" type="radio" id="toolRect" value="rectangle" checked />
+                        <label for="toolRect">Rectangle</label>
+                        <input name="tool" type="radio" id="toolLine" value="line" />
+                        <label for="toolLine">Line</label>
+                    </div>
+                </div>
+                <!-- Canvas -->
                 <div class="row">
                     <div class="col s12 canvasContainer">
                         <canvas id="editCanvas" width="800" height="600"></canvas>
@@ -30,6 +42,7 @@
                 </div>
             </div>
         </main>
+        <!-- Footer -->
         <footer class="page-footer white">
             <div class="footer-copyright orange">
                 <div class="container">

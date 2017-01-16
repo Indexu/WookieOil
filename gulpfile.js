@@ -55,7 +55,7 @@ gulp.task("dev_scripts", function () {
     del.sync("src/public/resources/js/scripts.js");
 
     return gulp.src([
-            "src/public/resources/js/master.js",
+            "src/public/resources/js/init.js",
             "src/public/resources/js/utilites.js",
             "src/public/resources/js/entities/shape.js",
             "src/public/resources/js/**/*.js"
