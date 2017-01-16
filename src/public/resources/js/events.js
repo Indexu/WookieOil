@@ -55,5 +55,11 @@ settings.editCanvas.on("mouseup", function (e) {
 
         // Remove the current object
         settings.currentObj = undefined;
+
+        // Push to undo
+        settings.undo.push(settings.viewContext.getImageData(0, 0, settings.viewCanvas[0].width, settings.viewCanvas[0].height));
+
+        // Empty redo
+        settings.redo = [];
     }
 });
