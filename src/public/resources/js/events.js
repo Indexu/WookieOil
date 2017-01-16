@@ -7,8 +7,16 @@ settings.editCanvas.on("mousedown", function (e) {
     // Set the cursor to something flashy
     settings.editCanvas[0].style.cursor = "crosshair";
 
-    // Create the shape
-    var shape = new Rectangle(settings.mouseX, settings.mouseY, settings.nextColor);
+    var shape = undefined;
+
+    // Rectangle
+    if (settings.nextObj === "rectangle") {
+        shape = new Rectangle(settings.mouseX, settings.mouseY, settings.nextColor);
+    }
+    // Line
+    else if (settings.nextObj === "line") {
+        shape = new Line(settings.mouseX, settings.mouseY, settings.nextColor);
+    }
 
     // Assign the current object
     settings.currentObj = shape;
@@ -34,16 +42,18 @@ settings.editCanvas.on("mousemove", function (e) {
 
 // Edit - mouseup
 settings.editCanvas.on("mouseup", function (e) {
+    // Check if there is an object
+    if (settings.currentObj !== undefined) {
+        // Clear edit canvas
+        clearCanvas(settings.editCanvas[0], settings.editContext);
 
-    // Clear edit canvas
-    clearCanvas(settings.editCanvas[0], settings.editContext);
+        // Reset cursor
+        settings.editCanvas[0].style.cursor = "default";
 
-    // Reset cursor
-    settings.editCanvas[0].style.cursor = "default";
+        // Draw the object to the view canvas
+        settings.currentObj.draw(settings.viewContext);
 
-    // Draw the object to the view canvas
-    settings.currentObj.draw(settings.viewContext);
-
-    // Remove the current object
-    settings.currentObj = undefined;
+        // Remove the current object
+        settings.currentObj = undefined;
+    }
 });

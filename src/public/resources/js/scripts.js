@@ -3,7 +3,7 @@ var settings = {
     viewContext: $("#viewCanvas")[0].getContext("2d"),
     editCanvas: $("#editCanvas"),
     editContext: $("#editCanvas")[0].getContext("2d"),
-    nextObj: "rectangle",
+    nextObj: "line",
     nextColor: "black",
     currentObj: undefined,
     mouseX: 0,
@@ -27,8 +27,16 @@ settings.editCanvas.on("mousedown", function (e) {
     // Set the cursor to something flashy
     settings.editCanvas[0].style.cursor = "crosshair";
 
-    // Create the shape
-    var shape = new Rectangle(settings.mouseX, settings.mouseY, settings.nextColor);
+    var shape = undefined;
+
+    // Rectangle
+    if (settings.nextObj === "rectangle") {
+        shape = new Rectangle(settings.mouseX, settings.mouseY, settings.nextColor);
+    }
+    // Line
+    else if (settings.nextObj === "line") {
+        shape = new Line(settings.mouseX, settings.mouseY, settings.nextColor);
+    }
 
     // Assign the current object
     settings.currentObj = shape;
@@ -54,18 +62,20 @@ settings.editCanvas.on("mousemove", function (e) {
 
 // Edit - mouseup
 settings.editCanvas.on("mouseup", function (e) {
+    // Check if there is an object
+    if (settings.currentObj !== undefined) {
+        // Clear edit canvas
+        clearCanvas(settings.editCanvas[0], settings.editContext);
 
-    // Clear edit canvas
-    clearCanvas(settings.editCanvas[0], settings.editContext);
+        // Reset cursor
+        settings.editCanvas[0].style.cursor = "default";
 
-    // Reset cursor
-    settings.editCanvas[0].style.cursor = "default";
+        // Draw the object to the view canvas
+        settings.currentObj.draw(settings.viewContext);
 
-    // Draw the object to the view canvas
-    settings.currentObj.draw(settings.viewContext);
-
-    // Remove the current object
-    settings.currentObj = undefined;
+        // Remove the current object
+        settings.currentObj = undefined;
+    }
 });
 // Update mouse coordinates in settings
 function updateMousePosition(e) {
@@ -81,6 +91,23 @@ function updateMousePosition(e) {
 // Clear a canvas
 function clearCanvas(canvas, context) {
     context.clearRect(0, 0, canvas.width, canvas.height);
+}
+class Line extends Shape {
+    constructor(x, y, color) {
+        super(x, y, color);
+    }
+
+    setEnd(x, y) {
+        this.endX = x;
+        this.endY = y;
+    }
+
+    draw(context) {
+        context.beginPath();
+        context.moveTo(this.x, this.y);
+        context.lineTo(this.endX, this.endY);
+        context.stroke();
+    }
 }
 class Rectangle extends Shape {
     constructor(x, y, color) {
