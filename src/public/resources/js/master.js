@@ -3,7 +3,7 @@ var settings = {
     viewContext: $("#viewCanvas")[0].getContext("2d"),
     editCanvas: $("#editCanvas"),
     editContext: $("#editCanvas")[0].getContext("2d"),
-    nextObj: "rectangle",
+    nextObj: "line",
     nextColor: "black",
     currentObj: undefined,
     mouseX: 0,
