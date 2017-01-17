@@ -6,7 +6,7 @@ var settings = {
     nextObj: "rectangle",
     nextColor: "black",
     currentObj: undefined,
-    undo: [],
+    shapes: [],
     redo: [],
     mouseX: 0,
     mouseY: 0
@@ -90,11 +90,11 @@ settings.editCanvas.on("mouseup", function (e) {
         // Draw the object to the view canvas
         settings.currentObj.draw(settings.viewContext);
 
+        // Push to shapes
+        settings.shapes.push(settings.currentObj);
+
         // Remove the current object
         settings.currentObj = undefined;
-
-        // Push to undo
-        settings.undo.push(settings.viewContext.getImageData(0, 0, settings.viewCanvas[0].width, settings.viewCanvas[0].height));
 
         // Empty redo
         settings.redo = [];
@@ -116,25 +116,29 @@ function clearCanvas(canvas, context) {
     context.clearRect(0, 0, canvas.width, canvas.height);
 }
 
+// Clear and draw the shapes array
+function redraw(canvas, context, shapes) {
+    // Clear
+    clearCanvas(canvas, context);
+
+    // Draw everything in shapes
+    for (var i = 0; i < shapes.length; i++) {
+        shapes[i].draw(context);
+    }
+}
+
 // Undo
 function undo(canvas, context) {
     // Make sure that there is something to undo
-    if (settings.undo.length !== 0) {
-        // Pop from undo
-        var img = settings.undo.pop();
+    if (settings.shapes.length !== 0) {
+        // Pop from shapes
+        var shape = settings.shapes.pop();
 
         // Push to redo
-        settings.redo.push(img);
+        settings.redo.push(shape);
 
-        // Display if something to display
-        if (settings.undo.length !== 0) {
-            var display = settings.undo[settings.undo.length - 1];
-            context.putImageData(display, 0, 0);
-        }
-        // Nothing to display
-        else {
-            clearCanvas(canvas, context);
-        }
+        // Re-draw image
+        redraw(canvas, context, settings.shapes);
 
     }
 }
@@ -144,12 +148,13 @@ function redo(canvas, context) {
     // Make sure that there is something to redo
     if (settings.redo.length !== 0) {
         // Pop from redo
-        var img = settings.redo.pop();
+        var shape = settings.redo.pop();
 
         // Push to undo
-        settings.undo.push(img);
+        settings.shapes.push(shape);
 
-        context.putImageData(img, 0, 0);
+        // Re-draw image
+        redraw(canvas, context, settings.shapes);
     }
 }
 class Line extends Shape {

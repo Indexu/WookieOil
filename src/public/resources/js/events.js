@@ -53,11 +53,11 @@ settings.editCanvas.on("mouseup", function (e) {
         // Draw the object to the view canvas
         settings.currentObj.draw(settings.viewContext);
 
+        // Push to shapes
+        settings.shapes.push(settings.currentObj);
+
         // Remove the current object
         settings.currentObj = undefined;
-
-        // Push to undo
-        settings.undo.push(settings.viewContext.getImageData(0, 0, settings.viewCanvas[0].width, settings.viewCanvas[0].height));
 
         // Empty redo
         settings.redo = [];
