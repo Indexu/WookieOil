@@ -13,6 +13,10 @@ settings.editCanvas.on("mousedown", function (e) {
     if (settings.nextObj === "rectangle") {
         shape = new Rectangle(settings.mouseX, settings.mouseY, settings.nextColor);
     }
+    // Circle
+    else if (settings.nextObj === "circle") {
+        shape = new Circle(settings.mouseX, settings.mouseY, settings.nextColor);
+    }
     // Line
     else if (settings.nextObj === "line") {
         shape = new Line(settings.mouseX, settings.mouseY, settings.nextColor);
