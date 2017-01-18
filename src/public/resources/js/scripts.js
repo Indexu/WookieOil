@@ -50,6 +50,10 @@ settings.editCanvas.on("mousedown", function (e) {
     if (settings.nextObj === "rectangle") {
         shape = new Rectangle(settings.mouseX, settings.mouseY, settings.nextColor);
     }
+    // Circle
+    else if (settings.nextObj === "circle") {
+        shape = new Circle(settings.mouseX, settings.mouseY, settings.nextColor);
+    }
     // Line
     else if (settings.nextObj === "line") {
         shape = new Line(settings.mouseX, settings.mouseY, settings.nextColor);
@@ -157,6 +161,42 @@ function redo(canvas, context) {
         redraw(canvas, context, settings.shapes);
     }
 }
+class Circle extends Shape {
+    constructor(x, y, color) {
+        super(x, y, color);
+
+        this.step = 0.1;
+    }
+
+    setEnd(x, y) {
+        this.endX = x;
+        this.endY = y;
+
+        this.radiusX = (this.endX - this.x) * 0.5;
+        this.radiusY = (this.endY - this.y) * 0.5;
+
+        this.centerX = this.x + this.radiusX;
+        this.centerY = this.y + this.radiusY;
+    }
+
+    draw(context) {
+
+        // Reference: K3N @ StackOverflow (http://stackoverflow.com/users/1693593/k3n)
+        // http://stackoverflow.com/questions/21594756/drawing-circle-ellipse-on-html5-canvas-using-mouse-events
+
+        context.beginPath();
+        context.moveTo(this.endX, this.centerY);
+
+        // Draw a lot of lines in a circle
+        for (var i = this.step; i < Math.PI * 2; i += this.step) {
+            context.lineTo(this.centerX + (this.radiusX * Math.cos(i)),
+                this.centerY + (this.radiusY * Math.sin(i)));
+        }
+
+        context.closePath();
+        context.stroke();
+    }
+}
 class Line extends Shape {
     constructor(x, y, color) {
         super(x, y, color);
@@ -171,6 +211,7 @@ class Line extends Shape {
         context.beginPath();
         context.moveTo(this.x, this.y);
         context.lineTo(this.endX, this.endY);
+        context.closePath();
         context.stroke();
     }
 }
