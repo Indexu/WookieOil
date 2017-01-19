@@ -4,11 +4,18 @@ class Rectangle extends Shape {
     }
 
     setEnd(x, y) {
-        this.endX = x;
-        this.endY = y;
+        this.width = x - this.x;
+        this.height = y - this.y;
     }
 
     draw(context) {
-        context.strokeRect(this.x, this.y, this.endX - this.x, this.endY - this.y);
+        context.beginPath();
+        context.rect(this.x, this.y, this.width, this.height);
+        context.stroke();
+    }
+
+    contains(x, y) {
+        return (this.x <= x) && (x <= this.x + this.width) &&
+            (this.y <= y) && (y <= this.y + this.height);
     }
 }

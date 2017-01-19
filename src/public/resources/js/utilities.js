@@ -21,7 +21,9 @@ function redraw(canvas, context, shapes) {
 
     // Draw everything in shapes
     for (var i = 0; i < shapes.length; i++) {
-        shapes[i].draw(context);
+        if (shapes[i] !== undefined) {
+            shapes[i].draw(context);
+        }
     }
 }
 

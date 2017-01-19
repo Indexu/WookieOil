@@ -30,7 +30,6 @@ class Circle extends Shape {
                 this.centerY + (this.radiusY * Math.sin(i)));
         }
 
-        context.closePath();
         context.stroke();
     }
 }

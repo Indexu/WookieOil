@@ -6,6 +6,7 @@ var settings = {
     nextObj: "rectangle",
     nextColor: "black",
     currentObj: undefined,
+    selectIndex: undefined,
     shapes: [],
     redo: [],
     mouseX: 0,

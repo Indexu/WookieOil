@@ -6,6 +6,7 @@ var settings = {
     nextObj: "rectangle",
     nextColor: "black",
     currentObj: undefined,
+    selectIndex: undefined,
     shapes: [],
     redo: [],
     mouseX: 0,
@@ -37,26 +38,59 @@ class Shape {
 }
 // Edit - mousedown
 settings.editCanvas.on("mousedown", function (e) {
+    e.preventDefault();
 
     // Update mouse
     updateMousePosition(e);
 
-    // Set the cursor to something flashy
-    settings.editCanvas[0].style.cursor = "crosshair";
-
     var shape = undefined;
 
-    // Rectangle
-    if (settings.nextObj === "rectangle") {
-        shape = new Rectangle(settings.mouseX, settings.mouseY, settings.nextColor);
+    // Select tool
+    if (settings.nextObj === "select") {
+        var currShape;
+        // Find the shape
+        for (var i = settings.shapes.length - 1; 0 <= i && shape === undefined; i--) {
+
+            currShape = settings.shapes[i];
+
+            currShape.draw(settings.editContext);
+
+            //if (currShape.contains(settings.mouseX, settings.mouseY)) {
+            if (settings.editContext.isPointInPath(settings.mouseX, settings.mouseY)) {
+                shape = currShape;
+                settings.selectIndex = i;
+                settings.shapes[i] = undefined;
+            }
+
+            clearCanvas(settings.editCanvas[0], settings.editContext);
+        }
+
+        // Place the shape selected on the edit canvas
+        if (shape !== undefined) {
+            redraw(settings.viewCanvas[0], settings.viewContext, settings.shapes);
+            shape.draw(settings.editContext);
+
+            // Set the cursor
+            settings.editCanvas[0].style.cursor = "move";
+        }
     }
-    // Circle
-    else if (settings.nextObj === "circle") {
-        shape = new Circle(settings.mouseX, settings.mouseY, settings.nextColor);
-    }
-    // Line
-    else if (settings.nextObj === "line") {
-        shape = new Line(settings.mouseX, settings.mouseY, settings.nextColor);
+    // Some shape tool
+    else {
+        // Set the cursor
+        settings.editCanvas[0].style.cursor = "crosshair";
+
+        // Rectangle
+        if (settings.nextObj === "rectangle") {
+            shape = new Rectangle(settings.mouseX, settings.mouseY, settings.nextColor);
+        }
+        // Circle
+        else if (settings.nextObj === "circle") {
+            shape = new Circle(settings.mouseX, settings.mouseY, settings.nextColor);
+        }
+        // Line
+        else if (settings.nextObj === "line") {
+            shape = new Line(settings.mouseX, settings.mouseY, settings.nextColor);
+        }
     }
 
     // Assign the current object
@@ -65,37 +99,77 @@ settings.editCanvas.on("mousedown", function (e) {
 
 // Edit - mousemove
 settings.editCanvas.on("mousemove", function (e) {
+    e.preventDefault();
+
     // Check if there is an object
     if (settings.currentObj !== undefined) {
-        // Update mouse
-        updateMousePosition(e);
 
-        // Clear edit canvas
-        clearCanvas(settings.editCanvas[0], settings.editContext);
+        // Select tool
+        if (settings.nextObj === "select") {
+            // Old mouse coordinates
+            var oldX = settings.mouseX;
+            var oldY = settings.mouseY
 
-        // Set the new end position
-        settings.currentObj.setEnd(settings.mouseX, settings.mouseY);
+            // Update mouse
+            updateMousePosition(e);
 
-        // Draw the object to the edit canvas
-        settings.currentObj.draw(settings.editContext);
+            // Difference of coordinates
+            var deltaX = settings.mouseX - oldX;
+            var deltaY = settings.mouseY - oldY;
+
+            // Update shape placement
+            settings.currentObj.x += deltaX;
+            settings.currentObj.y += deltaY;
+
+            // Clear edit canvas
+            clearCanvas(settings.editCanvas[0], settings.editContext);
+
+            // Draw the object to the edit canvas
+            settings.currentObj.draw(settings.editContext);
+        }
+        // Some shape tool
+        else {
+            // Update mouse
+            updateMousePosition(e);
+
+            // Clear edit canvas
+            clearCanvas(settings.editCanvas[0], settings.editContext);
+
+            // Set the new end position
+            settings.currentObj.setEnd(settings.mouseX, settings.mouseY);
+
+            // Draw the object to the edit canvas
+            settings.currentObj.draw(settings.editContext);
+        }
     }
 });
 
 // Edit - mouseup
 settings.editCanvas.on("mouseup", function (e) {
+    // Reset cursor
+    settings.editCanvas[0].style.cursor = "default";
+
     // Check if there is an object
     if (settings.currentObj !== undefined) {
         // Clear edit canvas
         clearCanvas(settings.editCanvas[0], settings.editContext);
 
-        // Reset cursor
-        settings.editCanvas[0].style.cursor = "default";
+        // Redraw everything if it is select tool
+        if (settings.nextObj === "select") {
+            // Place the current object back into shapes
+            settings.shapes[settings.selectIndex] = settings.currentObj;
+            redraw(settings.viewCanvas[0], settings.viewContext, settings.shapes);
 
-        // Draw the object to the view canvas
-        settings.currentObj.draw(settings.viewContext);
+            settings.selectIndex = undefined;
+        }
+        // Draw the object to the view canvas 
+        else {
 
-        // Push to shapes
-        settings.shapes.push(settings.currentObj);
+            // Push to shapes
+            settings.shapes.push(settings.currentObj);
+
+            settings.currentObj.draw(settings.viewContext);
+        }
 
         // Remove the current object
         settings.currentObj = undefined;
@@ -127,7 +201,9 @@ function redraw(canvas, context, shapes) {
 
     // Draw everything in shapes
     for (var i = 0; i < shapes.length; i++) {
-        shapes[i].draw(context);
+        if (shapes[i] !== undefined) {
+            shapes[i].draw(context);
+        }
     }
 }
 
@@ -193,7 +269,6 @@ class Circle extends Shape {
                 this.centerY + (this.radiusY * Math.sin(i)));
         }
 
-        context.closePath();
         context.stroke();
     }
 }
@@ -214,6 +289,30 @@ class Line extends Shape {
         context.closePath();
         context.stroke();
     }
+
+    contains(x, y) {
+        /*
+        var crossproduct = (y - this.y) * (this.endX - this.x) - (x - this.x) * (this.endY - this.y);
+        if (Math.abs(crossproduct) !== 0) {
+            console.log("CROSS");
+            return false;
+        }
+        */
+
+        var dotproduct = (x - this.x) * (this.endX - this.x) + (y - this.y) * (this.endY - this.y);
+        if (dotproduct < 0) {
+            console.log("DOT");
+            return false;
+        }
+
+        var squaredlengthba = (this.endX - this.x) * (this.endX - this.x) + (this.endY - this.y) * (this.endY - this.y);
+        if (dotproduct > squaredlengthba) {
+            console.log("SQUARE");
+            return false;
+        }
+
+        return true;
+    }
 }
 class Rectangle extends Shape {
     constructor(x, y, color) {
@@ -221,11 +320,18 @@ class Rectangle extends Shape {
     }
 
     setEnd(x, y) {
-        this.endX = x;
-        this.endY = y;
+        this.width = x - this.x;
+        this.height = y - this.y;
     }
 
     draw(context) {
-        context.strokeRect(this.x, this.y, this.endX - this.x, this.endY - this.y);
+        context.beginPath();
+        context.rect(this.x, this.y, this.width, this.height);
+        context.stroke();
+    }
+
+    contains(x, y) {
+        return (this.x <= x) && (x <= this.x + this.width) &&
+            (this.y <= y) && (y <= this.y + this.height);
     }
 }
