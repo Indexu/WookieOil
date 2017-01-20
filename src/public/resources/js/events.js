@@ -13,7 +13,8 @@ settings.editCanvas.on("mousedown", function (e) {
         for (var i = settings.shapes.length - 1; 0 <= i && !settings.moving; i--) {
             settings.shapes[i].draw(settings.editContext);
 
-            if (settings.editContext.isPointInPath(settings.mouseX, settings.mouseY)) {
+            if (settings.editContext.isPointInPath(settings.mouseX, settings.mouseY) ||
+                (settings.editContext.isPointInStroke(settings.mouseX, settings.mouseY))) {
                 settings.selectedShapeIndexes.push(i);
                 settings.moving = true;
 

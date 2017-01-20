@@ -57,3 +57,20 @@ function redo(canvas, context) {
         redraw(canvas, context, settings.shapes);
     }
 }
+
+// Line segment intersection check
+// Reference: Joncom @ GitHub (https://gist.github.com/Joncom)
+// https://gist.github.com/Joncom/e8e8d18ebe7fe55c3894
+function linesIntersect(line1, line2) {
+    var line1DeltaX, line1DeltaY, line2DeltaX, line2DeltaY;
+    line1DeltaX = line1.x2 - line1.x1;
+    line1DeltaY = line1.y2 - line1.y1;
+    line2DeltaX = line2.x2 - line2.x1;
+    line2DeltaY = line2.y2 - line2.y1;
+
+    var s, t;
+    s = (-line1DeltaY * (line1.x1 - line2.x1) + line1DeltaX * (line1.y1 - line2.y1)) / (-line2DeltaX * line1DeltaY + line1DeltaX * line2DeltaY);
+    t = (line2DeltaX * (line1.y1 - line2.y1) - line2DeltaY * (line1.x1 - line2.x1)) / (-line2DeltaX * line1DeltaY + line1DeltaX * line2DeltaY);
+
+    return (s >= 0 && s <= 1 && t >= 0 && t <= 1);
+}
