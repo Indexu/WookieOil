@@ -47,6 +47,10 @@ settings.editCanvas.on("mousedown", function (e) {
         else if (settings.nextObj === "line") {
             shape = new Line(settings.mouseX, settings.mouseY, settings.nextColor);
         }
+        // Pen
+        else if (settings.nextObj === "pen") {
+            shape = new Pen(settings.mouseX, settings.mouseY, settings.nextColor);
+        }
     }
 
     // Assign the current object
