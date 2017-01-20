@@ -6,6 +6,9 @@ var settings = {
     nextObj: "rectangle",
     nextColor: "black",
     currentObj: undefined,
+    //selectIndex: undefined,
+    selectedShapeIndexes: [],
+    moving: false,
     shapes: [],
     redo: [],
     mouseX: 0,
@@ -37,26 +40,53 @@ class Shape {
 }
 // Edit - mousedown
 settings.editCanvas.on("mousedown", function (e) {
+    e.preventDefault();
 
     // Update mouse
     updateMousePosition(e);
 
-    // Set the cursor to something flashy
-    settings.editCanvas[0].style.cursor = "crosshair";
-
     var shape = undefined;
 
-    // Rectangle
-    if (settings.nextObj === "rectangle") {
-        shape = new Rectangle(settings.mouseX, settings.mouseY, settings.nextColor);
+    // Select tool
+    if (settings.nextObj === "select" && !settings.moving) {
+        // Find if a shape was clicked on
+        for (var i = settings.shapes.length - 1; 0 <= i && !settings.moving; i--) {
+            settings.shapes[i].draw(settings.editContext);
+
+            if (settings.editContext.isPointInPath(settings.mouseX, settings.mouseY) ||
+                (settings.editContext.isPointInStroke(settings.mouseX, settings.mouseY))) {
+                settings.selectedShapeIndexes.push(i);
+                settings.moving = true;
+
+                // Set the cursor
+                settings.editCanvas[0].style.cursor = "move";
+            }
+
+            clearCanvas(settings.editCanvas[0], settings.editContext);
+        }
+
+        // No shape was selected => Select rectangle
+        if (!settings.moving) {
+            shape = new Rectangle(settings.mouseX, settings.mouseY, settings.nextColor);
+        }
     }
-    // Circle
-    else if (settings.nextObj === "circle") {
-        shape = new Circle(settings.mouseX, settings.mouseY, settings.nextColor);
-    }
-    // Line
-    else if (settings.nextObj === "line") {
-        shape = new Line(settings.mouseX, settings.mouseY, settings.nextColor);
+    // Some shape tool
+    else if (!settings.moving) {
+        // Set the cursor
+        settings.editCanvas[0].style.cursor = "crosshair";
+
+        // Rectangle
+        if (settings.nextObj === "rectangle") {
+            shape = new Rectangle(settings.mouseX, settings.mouseY, settings.nextColor);
+        }
+        // Circle
+        else if (settings.nextObj === "circle") {
+            shape = new Circle(settings.mouseX, settings.mouseY, settings.nextColor);
+        }
+        // Line
+        else if (settings.nextObj === "line") {
+            shape = new Line(settings.mouseX, settings.mouseY, settings.nextColor);
+        }
     }
 
     // Assign the current object
@@ -65,7 +95,32 @@ settings.editCanvas.on("mousedown", function (e) {
 
 // Edit - mousemove
 settings.editCanvas.on("mousemove", function (e) {
-    // Check if there is an object
+    e.preventDefault();
+
+    // Moving objects
+    if (settings.moving) {
+        // Old mouse coordinates
+        var oldX = settings.mouseX;
+        var oldY = settings.mouseY
+
+        // Update mouse
+        updateMousePosition(e);
+
+        // Difference of coordinates
+        var deltaX = settings.mouseX - oldX;
+        var deltaY = settings.mouseY - oldY;
+
+        // Update shape placement
+        var index;
+        for (var i = 0; i < settings.selectedShapeIndexes.length; i++) {
+            index = settings.selectedShapeIndexes[i];
+            settings.shapes[index].move(deltaX, deltaY);
+        }
+
+        redraw(settings.viewCanvas[0], settings.viewContext, settings.shapes);
+    }
+
+    // Check if there is an object to be drawn
     if (settings.currentObj !== undefined) {
         // Update mouse
         updateMousePosition(e);
@@ -78,24 +133,49 @@ settings.editCanvas.on("mousemove", function (e) {
 
         // Draw the object to the edit canvas
         settings.currentObj.draw(settings.editContext);
+        //}
     }
 });
 
 // Edit - mouseup
 settings.editCanvas.on("mouseup", function (e) {
+    // Reset cursor
+    settings.editCanvas[0].style.cursor = "default";
+
+    if (settings.moving) {
+        settings.selectedShapeIndexes = [];
+        settings.moving = false;
+    }
+
     // Check if there is an object
-    if (settings.currentObj !== undefined) {
+    else if (settings.currentObj !== undefined) {
         // Clear edit canvas
         clearCanvas(settings.editCanvas[0], settings.editContext);
 
-        // Reset cursor
-        settings.editCanvas[0].style.cursor = "default";
+        // Redraw everything if it is select tool
+        if (settings.nextObj === "select") {
+            // Find out which shapes the select tool intersects with
+            for (var i = settings.shapes.length - 1; 0 <= i; i--) {
+                if (settings.shapes[i].intersects(settings.currentObj)) {
+                    settings.selectedShapeIndexes.push(i);
+                    settings.moving = true;
+                }
+            }
 
-        // Draw the object to the view canvas
-        settings.currentObj.draw(settings.viewContext);
+            // Selected object(s)
+            if (settings.moving) {
+                // Set the cursor
+                settings.editCanvas[0].style.cursor = "move";
+            }
+        }
+        // Draw the object to the view canvas 
+        else {
 
-        // Push to shapes
-        settings.shapes.push(settings.currentObj);
+            // Push to shapes
+            settings.shapes.push(settings.currentObj);
+
+            settings.currentObj.draw(settings.viewContext);
+        }
 
         // Remove the current object
         settings.currentObj = undefined;
@@ -127,7 +207,9 @@ function redraw(canvas, context, shapes) {
 
     // Draw everything in shapes
     for (var i = 0; i < shapes.length; i++) {
-        shapes[i].draw(context);
+        if (shapes[i] !== undefined) {
+            shapes[i].draw(context);
+        }
     }
 }
 
@@ -161,11 +243,44 @@ function redo(canvas, context) {
         redraw(canvas, context, settings.shapes);
     }
 }
+
+// Line segment intersection check
+// Reference: Joncom @ GitHub (https://gist.github.com/Joncom)
+// https://gist.github.com/Joncom/e8e8d18ebe7fe55c3894
+function linesIntersect(line1, line2) {
+    var line1DeltaX, line1DeltaY, line2DeltaX, line2DeltaY;
+    line1DeltaX = line1.x2 - line1.x1;
+    line1DeltaY = line1.y2 - line1.y1;
+    line2DeltaX = line2.x2 - line2.x1;
+    line2DeltaY = line2.y2 - line2.y1;
+
+    var s, t;
+    s = (-line1DeltaY * (line1.x1 - line2.x1) + line1DeltaX * (line1.y1 - line2.y1)) / (-line2DeltaX * line1DeltaY + line1DeltaX * line2DeltaY);
+    t = (line2DeltaX * (line1.y1 - line2.y1) - line2DeltaY * (line1.x1 - line2.x1)) / (-line2DeltaX * line1DeltaY + line1DeltaX * line2DeltaY);
+
+    return (s >= 0 && s <= 1 && t >= 0 && t <= 1);
+}
+
+// Rectangle intersection check
+function rectsIntersect(rect1, rect2) {
+    return (rect1.x1 < rect2.x2 && rect2.x1 < rect1.x2 && rect1.y1 < rect2.y2 && rect2.y1 < rect1.y2);
+}
+
+// Rectangle cover check
+// Check if rect1 covers all of rect2
+function rectCover(rect1, rect2) {
+    // Check if the start point and end point of rect2 are within rect1
+    // Using an if statement for readability
+    if ((rect1.x1 <= rect2.x1 && rect2.x1 <= rect1.x2) && (rect1.y1 <= rect2.y1 && rect2.y1 <= rect1.y2) &&
+        (rect1.x1 <= rect2.x2 && rect2.x2 <= rect1.x2) && (rect1.y1 <= rect2.y2 && rect2.y2 <= rect1.y2)) {
+        return true;
+    }
+
+    return false;
+}
 class Circle extends Shape {
     constructor(x, y, color) {
         super(x, y, color);
-
-        this.step = 0.1;
     }
 
     setEnd(x, y) {
@@ -177,24 +292,185 @@ class Circle extends Shape {
 
         this.centerX = this.x + this.radiusX;
         this.centerY = this.y + this.radiusY;
+
+        // The following is used for intersection calculation
+        this.x1 = this.x;
+        this.x2 = x;
+        if (x < this.x) {
+            this.x1 -= Math.abs(x - this.x);
+            this.x2 += Math.abs(x - this.x);
+        }
+
+        this.y1 = this.y;
+        this.y2 = y;
+        if (y < this.y) {
+            this.y1 -= Math.abs(y - this.y);
+            this.y2 += Math.abs(y - this.y);
+        }
+    }
+
+    move(deltaX, deltaY) {
+        this.x += deltaX;
+        this.y += deltaY;
+
+        this.endX += deltaX;
+        this.endY += deltaY;
+
+        this.centerX += deltaX;
+        this.centerY += deltaY;
+
+        this.x1 += deltaX;
+        this.y1 += deltaY;
+
+        this.x2 += deltaX;
+        this.y2 += deltaY;
     }
 
     draw(context) {
 
-        // Reference: K3N @ StackOverflow (http://stackoverflow.com/users/1693593/k3n)
+        // Reference: Richard @ StackOverflow (http://stackoverflow.com/users/4506995/richard)
         // http://stackoverflow.com/questions/21594756/drawing-circle-ellipse-on-html5-canvas-using-mouse-events
 
+        // Save
+        context.save();
         context.beginPath();
-        context.moveTo(this.endX, this.centerY);
 
-        // Draw a lot of lines in a circle
-        for (var i = this.step; i < Math.PI * 2; i += this.step) {
-            context.lineTo(this.centerX + (this.radiusX * Math.cos(i)),
-                this.centerY + (this.radiusY * Math.sin(i)));
+        // Dynamic scaling
+        var scaleX = 1 * ((this.endX - this.x) / 2);
+        var scaleY = 1 * ((this.endY - this.y) / 2);
+        context.scale(scaleX, scaleY);
+
+        // Create ellipse
+        var centerx = (this.x / scaleX) + 1;
+        var centery = (this.y / scaleY) + 1;
+        context.arc(centerx, centery, 1, 0, 2 * Math.PI);
+
+        // Restore and draw
+        context.restore();
+        context.stroke();
+    }
+
+    intersects(rect) {
+
+        // Information source: http://gamedev.stackexchange.com/questions/109393/how-do-i-check-for-collision-between-an-ellipse-and-a-rectangle
+        // Vertex within a ellipse formula: http://math.stackexchange.com/questions/76457/check-if-a-point-is-within-an-ellipse
+
+        // Make sure that the rect intersects with the bounding box of the ellipse
+        // in order to have a chance of intersecting with the ellipse itself
+        if (!rectsIntersect(rect, this)) {
+            return false;
         }
 
-        context.closePath();
-        context.stroke();
+        if (rectCover(rect, this)) {
+            return true;
+        }
+
+        // Check if rect intersects with the x and y axis of the ellipse
+        // If so, the rect intersects with the ellipse
+        // X-axis
+        var axisX = {
+            x1: this.centerX,
+            y1: this.centerY - this.radiusY,
+            x2: this.centerX,
+            y2: this.centerY + this.radiusY
+        };
+        // Y-axis
+        var axisY = {
+            x1: this.centerX - this.radiusX,
+            y1: this.centerY,
+            x2: this.centerX + this.radiusX,
+            y2: this.centerY
+        };
+
+        // Rect upper line
+        var upperLine = {
+            x1: rect.x1,
+            y1: rect.y1,
+            x2: rect.x2,
+            y2: rect.y1
+        };
+        if (linesIntersect(axisX, upperLine) || linesIntersect(axisY, upperLine)) {
+            return true;
+        }
+
+        // Rect bottom line
+        var bottomLine = {
+            x1: rect.x1,
+            y1: rect.y2,
+            x2: rect.x2,
+            y2: rect.y2
+        };
+        if (linesIntersect(axisX, bottomLine) || linesIntersect(axisY, bottomLine)) {
+            return true;
+        }
+
+        // Rect left line
+        var leftLine = {
+            x1: rect.x1,
+            y1: rect.y1,
+            x2: rect.x1,
+            y2: rect.y2
+        };
+        if (linesIntersect(axisX, leftLine) || linesIntersect(axisY, leftLine)) {
+            return true;
+        }
+
+        // Rect right line
+        var rightLine = {
+            x1: rect.x2,
+            y1: rect.y1,
+            x2: rect.x2,
+            y2: rect.y2
+        };
+        if (linesIntersect(axisX, rightLine) || linesIntersect(axisY, rightLine)) {
+            return true;
+        }
+
+        // Find the corner of the rect that is closest to the center of the ellipse
+        // and check if it resides within the ellipse
+
+        var corners = {
+            upperLeft: {
+                x: rect.x1,
+                y: rect.y1
+            },
+            upperRight: {
+                x: rect.x2,
+                y: rect.y1
+            },
+            lowerLeft: {
+                x: rect.x1,
+                y: rect.y2
+            },
+            lowerRight: {
+                x: rect.x2,
+                y: rect.y2
+            }
+        };
+
+        var closestCorner = undefined;
+        var closestDist = Number.POSITIVE_INFINITY;
+
+        for (var key in corners) {
+            if (corners.hasOwnProperty(key)) {
+                var currentCorner = corners[key];
+                // Get euclidean distance
+                var dist = Math.sqrt(Math.pow(currentCorner.x - this.centerX, 2) + Math.pow(currentCorner.y - this.centerY, 2));
+
+                // Check if lower than current lowest
+                if (dist < closestDist) {
+                    closestDist = dist;
+                    closestCorner = currentCorner;
+                }
+            }
+        }
+
+        // Left hand side
+        var lhs = (Math.pow(closestCorner.x - this.centerX, 2)) / Math.pow(this.radiusX, 2);
+        // Right hand side
+        var rhs = (Math.pow(closestCorner.y - this.centerY, 2)) / Math.pow(this.radiusY, 2);
+
+        return ((lhs + rhs) <= 1);
     }
 }
 class Line extends Shape {
@@ -207,12 +483,78 @@ class Line extends Shape {
         this.endY = y;
     }
 
+    move(deltaX, deltaY) {
+        this.x += deltaX;
+        this.y += deltaY;
+
+        this.endX += deltaX;
+        this.endY += deltaY;
+    }
+
     draw(context) {
         context.beginPath();
         context.moveTo(this.x, this.y);
         context.lineTo(this.endX, this.endY);
         context.closePath();
         context.stroke();
+    }
+
+    intersects(rect) {
+        // If the line is completely within the rectangle
+        if ((rect.x1 <= this.x && this.x <= rect.x2 && rect.y1 <= this.y && this.y <= rect.y2) &&
+            ((rect.x1 <= this.endX && this.endX <= rect.x2 && rect.y1 <= this.endY && this.endY <= rect.y2))) {
+            return true;
+        }
+
+        // This line
+        var line = {
+            x1: this.x,
+            y1: this.y,
+            x2: this.endX,
+            y2: this.endY
+        };
+
+        // Rect upper line
+        var upperLine = {
+            x1: rect.x1,
+            y1: rect.y1,
+            x2: rect.x2,
+            y2: rect.y1
+        };
+        if (linesIntersect(line, upperLine)) {
+            return true;
+        }
+
+        // Rect bottom line
+        var bottomLine = {
+            x1: rect.x1,
+            y1: rect.y2,
+            x2: rect.x2,
+            y2: rect.y2
+        };
+        if (linesIntersect(line, bottomLine)) {
+            return true;
+        }
+
+        // Rect left line
+        var leftLine = {
+            x1: rect.x1,
+            y1: rect.y1,
+            x2: rect.x1,
+            y2: rect.y2
+        };
+        if (linesIntersect(line, leftLine)) {
+            return true;
+        }
+
+        // Rect right line
+        var rightLine = {
+            x1: rect.x2,
+            y1: rect.y1,
+            x2: rect.x2,
+            y2: rect.y2
+        };
+        return linesIntersect(line, rightLine);
     }
 }
 class Rectangle extends Shape {
@@ -223,9 +565,44 @@ class Rectangle extends Shape {
     setEnd(x, y) {
         this.endX = x;
         this.endY = y;
+
+        this.width = x - this.x;
+        this.height = y - this.y;
+
+        // The following is used for intersection calculation
+        this.x1 = this.x;
+        this.x2 = x;
+        if (x < this.x) {
+            this.x1 -= Math.abs(this.width);
+            this.x2 += Math.abs(this.width);
+        }
+
+        this.y1 = this.y;
+        this.y2 = y;
+        if (y < this.y) {
+            this.y1 -= Math.abs(this.height);
+            this.y2 += Math.abs(this.height);
+        }
+    }
+
+    move(deltaX, deltaY) {
+        this.x += deltaX;
+        this.y += deltaY;
+
+        this.x1 += deltaX;
+        this.y1 += deltaY;
+
+        this.x2 += deltaX;
+        this.y2 += deltaY;
     }
 
     draw(context) {
-        context.strokeRect(this.x, this.y, this.endX - this.x, this.endY - this.y);
+        context.beginPath();
+        context.rect(this.x, this.y, this.width, this.height);
+        context.stroke();
+    }
+
+    intersects(rect) {
+        return rectsIntersect(rect, this);
     }
 }
