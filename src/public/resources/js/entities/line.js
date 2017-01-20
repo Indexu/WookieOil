@@ -6,18 +6,6 @@ class Line extends Shape {
     setEnd(x, y) {
         this.endX = x;
         this.endY = y;
-
-        /*
-        this.x1 = this.x;
-        this.x2 = x;
-        if (x < this.x) {
-            this.x1 -= Math.abs(this.width);
-            this.x2 += Math.abs(this.width);
-        }
-
-        this.y1 = this.y;
-        this.y2 = y;
-        */
     }
 
     move(deltaX, deltaY) {

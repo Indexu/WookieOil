@@ -74,3 +74,21 @@ function linesIntersect(line1, line2) {
 
     return (s >= 0 && s <= 1 && t >= 0 && t <= 1);
 }
+
+// Rectangle intersection check
+function rectsIntersect(rect1, rect2) {
+    return (rect1.x1 < rect2.x2 && rect2.x1 < rect1.x2 && rect1.y1 < rect2.y2 && rect2.y1 < rect1.y2);
+}
+
+// Rectangle cover check
+// Check if rect1 covers all of rect2
+function rectCover(rect1, rect2) {
+    // Check if the start point and end point of rect2 are within rect1
+    // Using an if statement for readability
+    if ((rect1.x1 <= rect2.x1 && rect2.x1 <= rect1.x2) && (rect1.y1 <= rect2.y1 && rect2.y1 <= rect1.y2) &&
+        (rect1.x1 <= rect2.x2 && rect2.x2 <= rect1.x2) && (rect1.y1 <= rect2.y2 && rect2.y2 <= rect1.y2)) {
+        return true;
+    }
+
+    return false;
+}
