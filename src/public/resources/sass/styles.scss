@@ -32,3 +32,12 @@ canvas {
     left: 0;
     right: 0;
 }
+
+textarea {
+    position: absolute;
+    left: -9999px;
+    top: -9999px;
+    width: 300px;
+    resize: none;
+    background-color: #fcfcfc;
+}

@@ -13,8 +13,29 @@ settings.editCanvas.on("mousedown", function (e) {
         for (var i = settings.shapes.length - 1; 0 <= i && !settings.moving; i--) {
             settings.shapes[i].draw(settings.editContext);
 
-            if (settings.editContext.isPointInPath(settings.mouseX, settings.mouseY) ||
+            var clicked = false;
+
+            // Current shape is text
+            if (settings.shapes[i].constructor.name === "Text") {
+                var dummyRect = {
+                    x1: settings.mouseX,
+                    y1: settings.mouseY,
+                    x2: settings.mouseX,
+                    y2: settings.mouseY
+                }
+
+                if (settings.shapes[i].intersects(dummyRect)) {
+                    clicked = true;
+                }
+            }
+            // Else
+            else if (settings.editContext.isPointInPath(settings.mouseX, settings.mouseY) ||
                 (settings.editContext.isPointInStroke(settings.mouseX, settings.mouseY))) {
+                clicked = true;
+            }
+
+            // Add the shape to the select shapes array and start moving it
+            if (clicked) {
                 settings.selectedShapeIndexes.push(i);
                 settings.moving = true;
 
@@ -32,9 +53,6 @@ settings.editCanvas.on("mousedown", function (e) {
     }
     // Some shape tool
     else if (!settings.moving) {
-        // Set the cursor
-        settings.editCanvas[0].style.cursor = "crosshair";
-
         // Rectangle
         if (settings.nextObj === "rectangle") {
             shape = new Rectangle(settings.mouseX, settings.mouseY, settings.nextColor);
@@ -51,6 +69,10 @@ settings.editCanvas.on("mousedown", function (e) {
         else if (settings.nextObj === "pen") {
             shape = new Pen(settings.mouseX, settings.mouseY, settings.nextColor);
         }
+        // Text
+        else if (settings.nextObj === "text") {
+            showTextarea(e, settings.textarea);
+        }
     }
 
     // Assign the current object
@@ -65,7 +87,7 @@ settings.editCanvas.on("mousemove", function (e) {
     if (settings.moving) {
         // Old mouse coordinates
         var oldX = settings.mouseX;
-        var oldY = settings.mouseY
+        var oldY = settings.mouseY;
 
         // Update mouse
         updateMousePosition(e);
@@ -84,6 +106,11 @@ settings.editCanvas.on("mousemove", function (e) {
         redraw(settings.viewCanvas[0], settings.viewContext, settings.shapes);
     }
 
+    if (settings.nextObj !== "select") {
+        // Set the cursor
+        settings.editCanvas[0].style.cursor = "crosshair";
+    }
+
     // Check if there is an object to be drawn
     if (settings.currentObj !== undefined) {
         // Update mouse
@@ -97,14 +124,13 @@ settings.editCanvas.on("mousemove", function (e) {
 
         // Draw the object to the edit canvas
         settings.currentObj.draw(settings.editContext);
-        //}
     }
 });
 
 // Edit - mouseup
 settings.editCanvas.on("mouseup", function (e) {
     // Reset cursor
-    settings.editCanvas[0].style.cursor = "default";
+    settings.editCanvas[0].style.cursor = "crosshair";
 
     if (settings.moving) {
         settings.selectedShapeIndexes = [];

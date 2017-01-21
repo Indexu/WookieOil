@@ -3,10 +3,12 @@ var settings = {
     viewContext: $("#viewCanvas")[0].getContext("2d"),
     editCanvas: $("#editCanvas"),
     editContext: $("#editCanvas")[0].getContext("2d"),
+    textarea: $("#textArea"),
+    fontSize: 36,
+    font: "roboto",
     nextObj: "pen",
     nextColor: "black",
     currentObj: undefined,
-    //selectIndex: undefined,
     selectedShapeIndexes: [],
     moving: false,
     shapes: [],
@@ -28,4 +30,24 @@ $("#undo").on("click", function () {
 // Redo button
 $("#redo").on("click", function () {
     redo(settings.viewCanvas[0], settings.viewContext);
+});
+
+// Textarea enter key
+$("#textArea").on("keyup", function (e) {
+    e.preventDefault();
+    var code = (e.keyCode ? e.keyCode : e.which);
+    // Enter keycode is 13
+    if (code === 13) {
+        $(this).hide();
+
+        var font = settings.fontSize + "px " + settings.font;
+
+        var text = new Text(settings.mouseX, settings.mouseY + (settings.fontSize / 2), settings.nextColor, $(this).val(), font, settings.fontSize, settings.viewContext);
+
+        $(this).val("");
+
+        text.draw(settings.viewContext);
+
+        settings.shapes.push(text);
+    }
 });
