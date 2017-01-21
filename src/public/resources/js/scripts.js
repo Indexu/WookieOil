@@ -3,10 +3,12 @@ var settings = {
     viewContext: $("#viewCanvas")[0].getContext("2d"),
     editCanvas: $("#editCanvas"),
     editContext: $("#editCanvas")[0].getContext("2d"),
+    textarea: $("#textArea"),
+    fontSize: 36,
+    font: "roboto",
     nextObj: "pen",
     nextColor: "black",
     currentObj: undefined,
-    //selectIndex: undefined,
     selectedShapeIndexes: [],
     moving: false,
     shapes: [],
@@ -28,6 +30,26 @@ $("#undo").on("click", function () {
 // Redo button
 $("#redo").on("click", function () {
     redo(settings.viewCanvas[0], settings.viewContext);
+});
+
+// Textarea enter key
+$("#textArea").on("keyup", function (e) {
+    e.preventDefault();
+    var code = (e.keyCode ? e.keyCode : e.which);
+    // Enter keycode is 13
+    if (code === 13) {
+        $(this).hide();
+
+        var font = settings.fontSize + "px " + settings.font;
+
+        var text = new Text(settings.mouseX, settings.mouseY + (settings.fontSize / 2), settings.nextColor, $(this).val(), font, settings.fontSize, settings.viewContext);
+
+        $(this).val("");
+
+        text.draw(settings.viewContext);
+
+        settings.shapes.push(text);
+    }
 });
 class Shape {
     constructor(x, y, color) {
@@ -53,8 +75,29 @@ settings.editCanvas.on("mousedown", function (e) {
         for (var i = settings.shapes.length - 1; 0 <= i && !settings.moving; i--) {
             settings.shapes[i].draw(settings.editContext);
 
-            if (settings.editContext.isPointInPath(settings.mouseX, settings.mouseY) ||
+            var clicked = false;
+
+            // Current shape is text
+            if (settings.shapes[i].constructor.name === "Text") {
+                var dummyRect = {
+                    x1: settings.mouseX,
+                    y1: settings.mouseY,
+                    x2: settings.mouseX,
+                    y2: settings.mouseY
+                }
+
+                if (settings.shapes[i].intersects(dummyRect)) {
+                    clicked = true;
+                }
+            }
+            // Else
+            else if (settings.editContext.isPointInPath(settings.mouseX, settings.mouseY) ||
                 (settings.editContext.isPointInStroke(settings.mouseX, settings.mouseY))) {
+                clicked = true;
+            }
+
+            // Add the shape to the select shapes array and start moving it
+            if (clicked) {
                 settings.selectedShapeIndexes.push(i);
                 settings.moving = true;
 
@@ -72,9 +115,6 @@ settings.editCanvas.on("mousedown", function (e) {
     }
     // Some shape tool
     else if (!settings.moving) {
-        // Set the cursor
-        settings.editCanvas[0].style.cursor = "crosshair";
-
         // Rectangle
         if (settings.nextObj === "rectangle") {
             shape = new Rectangle(settings.mouseX, settings.mouseY, settings.nextColor);
@@ -91,6 +131,10 @@ settings.editCanvas.on("mousedown", function (e) {
         else if (settings.nextObj === "pen") {
             shape = new Pen(settings.mouseX, settings.mouseY, settings.nextColor);
         }
+        // Text
+        else if (settings.nextObj === "text") {
+            showTextarea(e, settings.textarea);
+        }
     }
 
     // Assign the current object
@@ -105,7 +149,7 @@ settings.editCanvas.on("mousemove", function (e) {
     if (settings.moving) {
         // Old mouse coordinates
         var oldX = settings.mouseX;
-        var oldY = settings.mouseY
+        var oldY = settings.mouseY;
 
         // Update mouse
         updateMousePosition(e);
@@ -124,6 +168,11 @@ settings.editCanvas.on("mousemove", function (e) {
         redraw(settings.viewCanvas[0], settings.viewContext, settings.shapes);
     }
 
+    if (settings.nextObj !== "select") {
+        // Set the cursor
+        settings.editCanvas[0].style.cursor = "crosshair";
+    }
+
     // Check if there is an object to be drawn
     if (settings.currentObj !== undefined) {
         // Update mouse
@@ -137,14 +186,13 @@ settings.editCanvas.on("mousemove", function (e) {
 
         // Draw the object to the edit canvas
         settings.currentObj.draw(settings.editContext);
-        //}
     }
 });
 
 // Edit - mouseup
 settings.editCanvas.on("mouseup", function (e) {
     // Reset cursor
-    settings.editCanvas[0].style.cursor = "default";
+    settings.editCanvas[0].style.cursor = "crosshair";
 
     if (settings.moving) {
         settings.selectedShapeIndexes = [];
@@ -281,6 +329,21 @@ function rectCover(rect1, rect2) {
     }
 
     return false;
+}
+
+// Place the textarea at mouse click on canvas
+function showTextarea(e, textarea) {
+    var x = e.clientX;
+    var y = e.clientY;
+
+    textarea.show();
+
+    textarea.css({
+        top: (y - 13.5) + "px",
+        left: (x - 2.55) + "px"
+    });
+
+    textarea.focus();
 }
 class Circle extends Shape {
     constructor(x, y, color) {
@@ -706,6 +769,45 @@ class Rectangle extends Shape {
         context.beginPath();
         context.rect(this.x, this.y, this.width, this.height);
         context.stroke();
+    }
+
+    intersects(rect) {
+        return rectsIntersect(rect, this);
+    }
+}
+class Text extends Shape {
+    constructor(x, y, color, text, font, px, context) {
+        super(x, y, color);
+
+        context.font = font;
+
+        this.text = text;
+        this.font = font;
+        this.height = px;
+        this.width = context.measureText(text).width;
+
+        this.x1 = x;
+        this.y1 = y - this.height;
+
+        this.x2 = x + this.width;
+        this.y2 = y;
+    }
+
+    move(deltaX, deltaY) {
+        this.x += deltaX;
+        this.y += deltaY;
+
+        this.x1 += deltaX;
+        this.y1 += deltaY;
+
+        this.x2 += deltaX;
+        this.y2 += deltaY;
+    }
+
+    draw(context) {
+        context.beginPath();
+        context.font = this.font;
+        context.fillText(this.text, this.x, this.y);
     }
 
     intersects(rect) {

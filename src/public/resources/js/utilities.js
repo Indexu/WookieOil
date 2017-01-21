@@ -92,3 +92,18 @@ function rectCover(rect1, rect2) {
 
     return false;
 }
+
+// Place the textarea at mouse click on canvas
+function showTextarea(e, textarea) {
+    var x = e.clientX;
+    var y = e.clientY;
+
+    textarea.show();
+
+    textarea.css({
+        top: (y - 13.5) + "px",
+        left: (x - 2.55) + "px"
+    });
+
+    textarea.focus();
+}
