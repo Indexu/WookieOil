@@ -33,8 +33,13 @@ $(document).ready(function () {
 });
 
 // Update object based on selected tool
-$("input[name='tool']").on("change", function () {
-    settings.nextObj = $(this).val();
+$(".tool").on("click", function (e) {
+    e.preventDefault();
+    settings.nextObj = $(this).attr("data-value");
+
+    // Change color of button
+    $(".tool:not(.light-blue accent-1)").addClass("light-blue accent-1");
+    $(this).removeClass("light-blue accent-1");
 });
 
 // Undo button

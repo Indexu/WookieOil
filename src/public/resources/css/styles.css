@@ -17,11 +17,7 @@ canvas {
   display: block;
   width: 1000px; }
 
-#viewCanvas {
-  border: 1px solid black; }
-
 #editCanvas {
-  border: 1px solid transparent;
   position: absolute;
   top: 0;
   left: 0;
@@ -41,3 +37,9 @@ textarea {
 
 .full-width {
   width: 100%; }
+
+.minicolors-theme-default.minicolors {
+  width: 100%; }
+
+.minicolors-swatch-color {
+  border-radius: 3px; }

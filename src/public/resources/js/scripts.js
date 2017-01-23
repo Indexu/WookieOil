@@ -33,8 +33,13 @@ $(document).ready(function () {
 });
 
 // Update object based on selected tool
-$("input[name='tool']").on("change", function () {
-    settings.nextObj = $(this).val();
+$(".tool").on("click", function (e) {
+    e.preventDefault();
+    settings.nextObj = $(this).attr("data-value");
+
+    // Change color of button
+    $(".tool:not(.light-blue accent-1)").addClass("light-blue accent-1");
+    $(this).removeClass("light-blue accent-1");
 });
 
 // Undo button
@@ -263,14 +268,19 @@ settings.editCanvas.on("mouseup", function (e) {
             // Push to shapes
             settings.shapes.push(settings.currentObj);
 
+            // Enable undo
+            enableUndo(true);
+
+            // Draw to view context
             settings.currentObj.draw(settings.viewContext);
         }
 
         // Remove the current object
         settings.currentObj = undefined;
 
-        // Empty redo
+        // Empty and disable redo
         settings.redo = [];
+        enableRedo(false);
     }
 });
 // Update mouse coordinates in settings
@@ -304,6 +314,9 @@ function redraw(canvas, context, shapes) {
 function undo(canvas, context) {
     // Make sure that there is something to undo
     if (settings.shapes.length !== 0) {
+        // Enable redo button
+        enableRedo(true);
+
         // Pop from shapes
         var shape = settings.shapes.pop();
 
@@ -313,6 +326,19 @@ function undo(canvas, context) {
         // Re-draw image
         redraw(canvas, context, settings.shapes);
 
+        // Disable button if nothing to undo
+        if (settings.shapes.length === 0) {
+            enableUndo(false);
+        }
+    }
+}
+
+// Enable / disable undo button
+function enableUndo(enable) {
+    if (enable) {
+        $("#undo").removeClass("disabled");
+    } else {
+        $("#undo").addClass("disabled");
     }
 }
 
@@ -320,6 +346,9 @@ function undo(canvas, context) {
 function redo(canvas, context) {
     // Make sure that there is something to redo
     if (settings.redo.length !== 0) {
+        // Enable undo button
+        enableUndo(true);
+
         // Pop from redo
         var shape = settings.redo.pop();
 
@@ -328,6 +357,20 @@ function redo(canvas, context) {
 
         // Re-draw image
         redraw(canvas, context, settings.shapes);
+
+        // Disable button if nothing to undo
+        if (settings.redo.length === 0) {
+            enableRedo(false);
+        }
+    }
+}
+
+// Enable / disable redo button
+function enableRedo(enable) {
+    if (enable) {
+        $("#redo").removeClass("disabled");
+    } else {
+        $("#redo").addClass("disabled");
     }
 }
 

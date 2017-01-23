@@ -164,13 +164,18 @@ settings.editCanvas.on("mouseup", function (e) {
             // Push to shapes
             settings.shapes.push(settings.currentObj);
 
+            // Enable undo
+            enableUndo(true);
+
+            // Draw to view context
             settings.currentObj.draw(settings.viewContext);
         }
 
         // Remove the current object
         settings.currentObj = undefined;
 
-        // Empty redo
+        // Empty and disable redo
         settings.redo = [];
+        enableRedo(false);
     }
 });
