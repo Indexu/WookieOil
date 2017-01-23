@@ -10,27 +10,28 @@ main {
 
 .canvasContainer {
     position: relative;
+    margin-left: 2em;
 }
 
 canvas {
     padding-left: 0;
     padding-right: 0;
-    margin-left: auto;
-    margin-right: auto;
+    margin: 0;
     display: block;
-    width: 800px;
 }
 
-#viewCanvas {
-    border: 1px solid black;
+.hide-on-small-only .card {
+    height: 595px;
+    margin: inherit;
+    margin-right: 2em;
 }
 
 #editCanvas {
-    border: 1px solid rgba(0, 0, 0, 0.0);
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
+    padding: inherit;
 }
 
 textarea {
@@ -45,4 +46,24 @@ textarea {
 
 .sp-palette {
     max-width: 200px;
+}
+
+.full-width {
+    width: 100%;
+}
+
+.minicolors-theme-default.minicolors {
+    width: 100%;
+}
+
+.minicolors-swatch-color {
+    border-radius: 3px;
+}
+
+label {
+    user-select: none;
+}
+
+.tool {
+    padding: 0;
 }

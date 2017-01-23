@@ -25,11 +25,28 @@ $(document).ready(function () {
 
     // Initialize minicolors colorpicker
     $("#colorPicker").minicolors();
+
+    // Tooltips
+    $(".tooltipped").tooltip({
+        delay: 50
+    });
+
+    // Resize the canvases
+    resize();
+});
+
+$(window).on("resize", function () {
+    resize();
 });
 
 // Update object based on selected tool
-$("input[name='tool']").on("change", function () {
-    settings.nextObj = $(this).val();
+$(".tool").on("click", function (e) {
+    e.preventDefault();
+    settings.nextObj = $(this).attr("data-value");
+
+    // Change color of button
+    $(".tool:not(.light-blue accent-1)").addClass("light-blue accent-1");
+    $(this).removeClass("light-blue accent-1");
 });
 
 // Undo button
@@ -64,17 +81,26 @@ $("#textArea").on("keyup", function (e) {
     var code = (e.keyCode ? e.keyCode : e.which);
     // Enter keycode is 13
     if (code === 13) {
+        // Hide text area
         $(this).hide();
 
+        // Make up the font
         var font = settings.fontSize + "px " + settings.font;
 
+        // Create the text
         var text = new Text(settings.mouseX, settings.mouseY + (settings.fontSize / 2), settings.nextColor, $(this).val(), font, settings.fontSize, settings.viewContext);
 
+        // Reset textarea
         $(this).val("");
 
+        // Draw text
         text.draw(settings.viewContext);
 
+        // Add to shapes
         settings.shapes.push(text);
+
+        // Enable undo
+        enableUndo(true);
     }
 });
 
@@ -254,18 +280,25 @@ settings.editCanvas.on("mouseup", function (e) {
         }
         // Draw the object to the view canvas 
         else {
+            if ((settings.currentObj.x !== settings.mouseX || settings.currentObj.y !== settings.mouseY) ||
+                settings.nextObj === "pen") {
+                // Push to shapes
+                settings.shapes.push(settings.currentObj);
 
-            // Push to shapes
-            settings.shapes.push(settings.currentObj);
+                // Enable undo
+                enableUndo(true);
 
-            settings.currentObj.draw(settings.viewContext);
+                // Draw to view context
+                settings.currentObj.draw(settings.viewContext);
+            }
         }
 
         // Remove the current object
         settings.currentObj = undefined;
 
-        // Empty redo
+        // Empty and disable redo
         settings.redo = [];
+        enableRedo(false);
     }
 });
 // Update mouse coordinates in settings
@@ -275,6 +308,16 @@ function updateMousePosition(e) {
 
     settings.mouseX = e.clientX - rect.left;
     settings.mouseY = e.clientY - rect.top;
+}
+
+// Resize the canvases
+function resize() {
+    var containerWidth = $(".canvasContainer").width();
+
+    settings.viewContext.canvas.width = containerWidth;
+    settings.editContext.canvas.width = containerWidth;
+
+    redraw(settings.viewCanvas[0], settings.viewContext, settings.shapes);
 }
 
 // Clear a canvas
@@ -299,6 +342,9 @@ function redraw(canvas, context, shapes) {
 function undo(canvas, context) {
     // Make sure that there is something to undo
     if (settings.shapes.length !== 0) {
+        // Enable redo button
+        enableRedo(true);
+
         // Pop from shapes
         var shape = settings.shapes.pop();
 
@@ -308,6 +354,19 @@ function undo(canvas, context) {
         // Re-draw image
         redraw(canvas, context, settings.shapes);
 
+        // Disable button if nothing to undo
+        if (settings.shapes.length === 0) {
+            enableUndo(false);
+        }
+    }
+}
+
+// Enable / disable undo button
+function enableUndo(enable) {
+    if (enable) {
+        $("#undo").removeClass("disabled");
+    } else {
+        $("#undo").addClass("disabled");
     }
 }
 
@@ -315,6 +374,9 @@ function undo(canvas, context) {
 function redo(canvas, context) {
     // Make sure that there is something to redo
     if (settings.redo.length !== 0) {
+        // Enable undo button
+        enableUndo(true);
+
         // Pop from redo
         var shape = settings.redo.pop();
 
@@ -323,6 +385,20 @@ function redo(canvas, context) {
 
         // Re-draw image
         redraw(canvas, context, settings.shapes);
+
+        // Disable button if nothing to undo
+        if (settings.redo.length === 0) {
+            enableRedo(false);
+        }
+    }
+}
+
+// Enable / disable redo button
+function enableRedo(enable) {
+    if (enable) {
+        $("#redo").removeClass("disabled");
+    } else {
+        $("#redo").addClass("disabled");
     }
 }
 

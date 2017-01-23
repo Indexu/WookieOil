@@ -7,6 +7,16 @@ function updateMousePosition(e) {
     settings.mouseY = e.clientY - rect.top;
 }
 
+// Resize the canvases
+function resize() {
+    var containerWidth = $(".canvasContainer").width();
+
+    settings.viewContext.canvas.width = containerWidth;
+    settings.editContext.canvas.width = containerWidth;
+
+    redraw(settings.viewCanvas[0], settings.viewContext, settings.shapes);
+}
+
 // Clear a canvas
 function clearCanvas(canvas, context) {
     context.clearRect(0, 0, canvas.width, canvas.height);
@@ -29,6 +39,9 @@ function redraw(canvas, context, shapes) {
 function undo(canvas, context) {
     // Make sure that there is something to undo
     if (settings.shapes.length !== 0) {
+        // Enable redo button
+        enableRedo(true);
+
         // Pop from shapes
         var shape = settings.shapes.pop();
 
@@ -38,6 +51,19 @@ function undo(canvas, context) {
         // Re-draw image
         redraw(canvas, context, settings.shapes);
 
+        // Disable button if nothing to undo
+        if (settings.shapes.length === 0) {
+            enableUndo(false);
+        }
+    }
+}
+
+// Enable / disable undo button
+function enableUndo(enable) {
+    if (enable) {
+        $("#undo").removeClass("disabled");
+    } else {
+        $("#undo").addClass("disabled");
     }
 }
 
@@ -45,6 +71,9 @@ function undo(canvas, context) {
 function redo(canvas, context) {
     // Make sure that there is something to redo
     if (settings.redo.length !== 0) {
+        // Enable undo button
+        enableUndo(true);
+
         // Pop from redo
         var shape = settings.redo.pop();
 
@@ -53,6 +82,20 @@ function redo(canvas, context) {
 
         // Re-draw image
         redraw(canvas, context, settings.shapes);
+
+        // Disable button if nothing to undo
+        if (settings.redo.length === 0) {
+            enableRedo(false);
+        }
+    }
+}
+
+// Enable / disable redo button
+function enableRedo(enable) {
+    if (enable) {
+        $("#redo").removeClass("disabled");
+    } else {
+        $("#redo").addClass("disabled");
     }
 }
 

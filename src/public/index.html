@@ -12,10 +12,10 @@
         <link href="resources/css/styles.css" type="text/css" rel="stylesheet" media="screen,projection" />
     </head>
 
-    <body>
+    <body class="light-blue lighten-5">
         <!-- Header -->
         <header class="navbar-fixed" style="z-index: 999">
-            <nav class="light-blue lighten-1" role="navigation">
+            <nav class="blue lighten-1" role="navigation">
                 <div class="nav-wrapper container">
                     <a id="logo-container" href="#" class="brand-logo center">WookieOil</a>
                 </div>
@@ -23,80 +23,151 @@
         </header>
         <!-- Main -->
         <main>
-            <div class="container">
-                <div class="row"></div>
-                <!-- Toolbar -->
-                <div class="row">
-                    <div class="col s8 offset-s2">
-                        <input name="tool" type="radio" id="toolRect" value="rectangle" />
-                        <label for="toolRect">Rectangle</label>
-                        <input name="tool" type="radio" id="toolLine" value="line" />
-                        <label for="toolLine">Line</label>
-                        <input name="tool" type="radio" id="toolCircle" value="circle" />
-                        <label for="toolCircle">Circle</label>
-                        <input name="tool" type="radio" id="toolSelect" value="select" />
-                        <label for="toolSelect">Select</label>
-                        <input name="tool" type="radio" id="toolPen" value="pen" checked />
-                        <label for="toolPen">Pen</label>
-                        <input name="tool" type="radio" id="toolText" value="text" />
-                        <label for="toolText">Text</label>
-                        <a id="undo" class="waves-effect waves-light btn"><i class="material-icons left">undo</i></a>
-                        <a id="redo" class="waves-effect waves-light btn"><i class="material-icons left">redo</i></a>
-                        <input type="hidden" id="colorPicker" value="#000" />
+            <div class="row"></div>
+            <!-- Canvas -->
+            <div class="row hide-on-small-only">
+                <div class="col l9 s7">
+                    <div class="canvasContainer">
+                        <canvas id="editCanvas" width="950" height="600"></canvas>
+                        <canvas id="viewCanvas" width="950" height="600" class="white"></canvas>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col s2 offset-s2 input-field">
-                        <select id="fontType">
-                            <option value="roboto" selected>Roboto</option>
-                            <option value="arial">Arial</option>
-                            <option value="times">Times New Roman</option>
-                            <option value="courier new">Courier New</option>
-                        </select>
-                        <label>Font</label>
+                <div class="col l3 s5">
+                    <div class="card">
+                        <div class="card-content center">
+                            <!-- Undo & Redo -->
+                            <div id="undo-redo" class="row">
+                                <div class="col s12">
+                                    <label class="left" for="undo-redo">Undo &amp; redo</label>
+                                </div>
+                                <div class="col s6 input-field">
+                                    <a id="undo" class="waves-effect waves-light btn full-width disabled">
+                                        <i class="material-icons center">undo</i>
+                                    </a>
+                                </div>
+                                <div class="col s6 input-field">
+                                    <a id="redo" class="waves-effect waves-light btn full-width disabled">
+                                        <i class="material-icons center">redo</i>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col s12">
+                                    <label class="left" for="tools">Tools</label>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col s12">
+                                    <div id="tools" class="row">
+                                        <div class="col s4">
+                                            <a class="waves-effect waves-light btn light-blue accent-1 full-width tool tooltipped" data-position="top" data-delay="50"
+                                                data-tooltip="Rectangle" data-value="rectangle">
+                                                <i class="material-icons center">crop_5_4</i>
+                                                </a>
+                                        </div>
+                                        <div class="col s4">
+                                            <a class="waves-effect waves-light btn light-blue accent-1 full-width tool tooltipped" data-position="top" data-delay="50"
+                                                data-tooltip="Circle" data-value="circle">
+                                                <i class="material-icons center">panorama_fish_eye</i>
+                                                </a>
+                                        </div>
+                                        <div class="col s4">
+                                            <a class="waves-effect waves-light btn light-blue accent-1 full-width tool tooltipped" data-position="top" data-delay="50"
+                                                data-tooltip="Line" data-value="line">
+                                                <i class="material-icons center">remove</i>
+                                                </a>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col s4">
+                                            <a class="waves-effect waves-light btn full-width tool tooltipped" data-position="top" data-delay="50" data-tooltip="Pen"
+                                                data-value="pen">
+                                                <i class="material-icons center">create</i>
+                                                </a>
+                                        </div>
+                                        <div class="col s4">
+                                            <a class="waves-effect waves-light btn light-blue accent-1 full-width tool tooltipped" data-position="top" data-delay="50"
+                                                data-tooltip="Text" data-value="text">
+                                                <i class="material-icons center">text_fields</i>
+                                                </a>
+                                        </div>
+                                        <div class="col s4">
+                                            <a class="waves-effect waves-light btn light-blue accent-1 full-width tool tooltipped" data-position="top" data-delay="50"
+                                                data-tooltip="Select" data-value="select">
+                                                <i class="material-icons center">select_all</i>
+                                                </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col s12">
+                                    <label class="left" for="colorPicker">Color</label>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col s12">
+                                    <span class="full-width">
+                                <input type="hidden" id="colorPicker" value="#000" />
+                            </span>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col s12 input-field">
+                                    <select id="fontType">
+                                        <option value="roboto" selected>Roboto</option>
+                                        <option value="arial">Arial</option>
+                                        <option value="times">Times New Roman</option>
+                                        <option value="courier new">Courier New</option>
+                                    </select>
+                                    <label>Font</label>
+                                </div>
+                                <div class="col s12">
+                                    <label class="left" for="strokeSize">Stroke width</label>
+                                    <p class="range-field">
+                                        <input type="range" id="strokeSize" min="1" max="72" value="10" />
+                                    </p>
+                                </div>
+                                <div class="col s12">
+                                    <label class="left" for="fontSize">Font size</label>
+                                    <p class="range-field">
+                                        <input type="range" id="fontSize" min="1" max="72" value="16" />
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col s2 offset-s2">
-                        <p>Stroke width:</p>
-                    </div>
-                    <div class="col s6">
-                        <p class="range-field">
-                            <input type="range" id="strokeSize" min="1" max="72" value="10" />
-                        </p>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col s2 offset-s2">
-                        <p>Font size:</p>
-                    </div>
-                    <div class="col s6">
-                        <p class="range-field">
-                            <input type="range" id="fontSize" min="1" max="72" value="16" />
-                        </p>
+            </div>
+            <!-- Textarea -->
+            <textarea id="textArea" rows="3" cols="20"></textarea>
+            <!-- Sad times -->
+            <div class="row hide-on-med-and-up">
+                <div class="col s12 m7">
+                    <div class="card">
+                        <div class="card-image">
+                            <img src="resources/images/kitten.jpeg">
+                        </div>
+                        <div class="card-content">
+                            <p>Your resolution is too small for us.</p>
+                        </div>
                     </div>
                 </div>
-                <!-- Canvas -->
-                <div class="row">
-                    <div class="col s12 canvasContainer">
-                        <canvas id="editCanvas" width="800" height="600"></canvas>
-                        <canvas id="viewCanvas" width="800" height="600"></canvas>
-                    </div>
-                </div>
-                <!-- Textarea -->
-                <textarea id="textArea" rows="3" cols="20"></textarea>
             </div>
         </main>
         <!-- Footer -->
-        <footer class="page-footer white">
-            <div class="footer-copyright orange">
-                <div class="container">
-                    Made with <a class="orange-text text-lighten-3" href="http://materializecss.com">Materialize</a>
+        <footer class="page-footer light-blue lighten-5">
+            <div class="footer-copyright blue darken-4">
+                <div class="container center">
+                    Made with
+                    <i class="material-icons tiny red-text">favorite</i>
+                    using
+                    <a class="blue-text text-lighten-3" href="http://materializecss.com">Materialize</a>
                 </div>
             </div>
         </footer>
         <!--  Scripts-->
-        <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+        <script src="vendors/jquery/jquery-2.1.1.min.js"></script>
         <script src="vendors/materialize/js/bin/materialize.min.js"></script>
         <script src="vendors/jquery-minicolors/jquery.minicolors.min.js"></script>
         <script src="resources/js/scripts.js"></script>

@@ -25,11 +25,28 @@ $(document).ready(function () {
 
     // Initialize minicolors colorpicker
     $("#colorPicker").minicolors();
+
+    // Tooltips
+    $(".tooltipped").tooltip({
+        delay: 50
+    });
+
+    // Resize the canvases
+    resize();
+});
+
+$(window).on("resize", function () {
+    resize();
 });
 
 // Update object based on selected tool
-$("input[name='tool']").on("change", function () {
-    settings.nextObj = $(this).val();
+$(".tool").on("click", function (e) {
+    e.preventDefault();
+    settings.nextObj = $(this).attr("data-value");
+
+    // Change color of button
+    $(".tool:not(.light-blue accent-1)").addClass("light-blue accent-1");
+    $(this).removeClass("light-blue accent-1");
 });
 
 // Undo button
@@ -64,17 +81,26 @@ $("#textArea").on("keyup", function (e) {
     var code = (e.keyCode ? e.keyCode : e.which);
     // Enter keycode is 13
     if (code === 13) {
+        // Hide text area
         $(this).hide();
 
+        // Make up the font
         var font = settings.fontSize + "px " + settings.font;
 
+        // Create the text
         var text = new Text(settings.mouseX, settings.mouseY + (settings.fontSize / 2), settings.nextColor, $(this).val(), font, settings.fontSize, settings.viewContext);
 
+        // Reset textarea
         $(this).val("");
 
+        // Draw text
         text.draw(settings.viewContext);
 
+        // Add to shapes
         settings.shapes.push(text);
+
+        // Enable undo
+        enableUndo(true);
     }
 });
 
