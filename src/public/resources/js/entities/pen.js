@@ -1,6 +1,6 @@
 class Pen extends Shape {
-    constructor(x, y, color) {
-        super(x, y, color);
+    constructor(x, y, color, strokeSize) {
+        super(x, y, color, strokeSize);
 
         this.points = [{
             x: x,
@@ -54,35 +54,46 @@ class Pen extends Shape {
         // http://stackoverflow.com/questions/7054272/how-to-draw-smooth-curve-through-n-points-using-javascript-html5-canvas/
 
         context.beginPath();
-        context.moveTo(this.points[0].x, this.points[0].y);
 
-        // Loop if more than 2 points
-        if (2 < this.points.length) {
-            var i = 1;
+        context.lineWidth = this.strokeSize;
+        context.strokeStyle = this.color;
 
-            for (; i < this.points.length - 2; i++) {
-                var endX = (this.points[i].x + this.points[i + 1].x) / 2;
-                var endY = (this.points[i].y + this.points[i + 1].y) / 2;
-
-                context.quadraticCurveTo(this.points[i].x, this.points[i].y, endX, endY);
-            }
-
-            // For the last 2 points
-            context.quadraticCurveTo(
-                this.points[i].x,
-                this.points[i].y,
-                this.points[i + 1].x,
-                this.points[i + 1].y
-            );
+        // Only a single point
+        if (this.points.length === 1) {
+            context.rect(this.points[0].x, this.points[0].y, 1, 1);
         }
-        // Simply bind together if 2 or less points 
+        // More than one point
         else {
-            context.quadraticCurveTo(
-                this.points[0].x,
-                this.points[0].y,
-                this.points[1].x,
-                this.points[1].y
-            );
+            context.moveTo(this.points[0].x, this.points[0].y);
+
+            // Loop if more than 2 points
+            if (2 < this.points.length) {
+                var i = 1;
+
+                for (; i < this.points.length - 2; i++) {
+                    var endX = (this.points[i].x + this.points[i + 1].x) / 2;
+                    var endY = (this.points[i].y + this.points[i + 1].y) / 2;
+
+                    context.quadraticCurveTo(this.points[i].x, this.points[i].y, endX, endY);
+                }
+
+                // For the last 2 points
+                context.quadraticCurveTo(
+                    this.points[i].x,
+                    this.points[i].y,
+                    this.points[i + 1].x,
+                    this.points[i + 1].y
+                );
+            }
+            // Simply bind together if 2 points 
+            else {
+                context.quadraticCurveTo(
+                    this.points[0].x,
+                    this.points[0].y,
+                    this.points[1].x,
+                    this.points[1].y
+                );
+            }
         }
 
         context.stroke();

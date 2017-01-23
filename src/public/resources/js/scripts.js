@@ -6,6 +6,7 @@ var settings = {
     textarea: $("#textArea"),
     fontSize: 36,
     font: "roboto",
+    strokeSize: 10,
     nextObj: "pen",
     nextColor: "black",
     currentObj: undefined,
@@ -16,6 +17,9 @@ var settings = {
     mouseX: 0,
     mouseY: 0
 };
+
+// Initialize minicolors colorpicker
+$("#colorPicker").minicolors();
 
 // Update object based on selected tool
 $("input[name='tool']").change(function () {
@@ -30,6 +34,16 @@ $("#undo").on("click", function () {
 // Redo button
 $("#redo").on("click", function () {
     redo(settings.viewCanvas[0], settings.viewContext);
+});
+
+// Stroke size
+$("#strokeSize").on("change", function () {
+    settings.strokeSize = $(this).val();
+});
+
+// Font size
+$("#fontSize").on("change", function () {
+    settings.fontSize = $(this).val();
 });
 
 // Textarea enter key
@@ -51,13 +65,19 @@ $("#textArea").on("keyup", function (e) {
         settings.shapes.push(text);
     }
 });
+
+// Color change
+$("#colorPicker").on("change", function () {
+    settings.nextColor = $(this).val();
+});
 class Shape {
-    constructor(x, y, color) {
+    constructor(x, y, color, strokeSize = undefined) {
         this.x = x;
         this.y = y;
         this.endX = x;
         this.endY = y;
         this.color = color;
+        this.strokeSize = strokeSize;
     }
 }
 // Edit - mousedown
@@ -110,26 +130,26 @@ settings.editCanvas.on("mousedown", function (e) {
 
         // No shape was selected => Select rectangle
         if (!settings.moving) {
-            shape = new Rectangle(settings.mouseX, settings.mouseY, settings.nextColor);
+            shape = new Rectangle(settings.mouseX, settings.mouseY, "black", 1);
         }
     }
     // Some shape tool
     else if (!settings.moving) {
         // Rectangle
         if (settings.nextObj === "rectangle") {
-            shape = new Rectangle(settings.mouseX, settings.mouseY, settings.nextColor);
+            shape = new Rectangle(settings.mouseX, settings.mouseY, settings.nextColor, settings.strokeSize);
         }
         // Circle
         else if (settings.nextObj === "circle") {
-            shape = new Circle(settings.mouseX, settings.mouseY, settings.nextColor);
+            shape = new Circle(settings.mouseX, settings.mouseY, settings.nextColor, settings.strokeSize);
         }
         // Line
         else if (settings.nextObj === "line") {
-            shape = new Line(settings.mouseX, settings.mouseY, settings.nextColor);
+            shape = new Line(settings.mouseX, settings.mouseY, settings.nextColor, settings.strokeSize);
         }
         // Pen
         else if (settings.nextObj === "pen") {
-            shape = new Pen(settings.mouseX, settings.mouseY, settings.nextColor);
+            shape = new Pen(settings.mouseX, settings.mouseY, settings.nextColor, settings.strokeSize);
         }
         // Text
         else if (settings.nextObj === "text") {
@@ -346,8 +366,8 @@ function showTextarea(e, textarea) {
     textarea.focus();
 }
 class Circle extends Shape {
-    constructor(x, y, color) {
-        super(x, y, color);
+    constructor(x, y, color, strokeSize) {
+        super(x, y, color, strokeSize);
     }
 
     setEnd(x, y) {
@@ -414,6 +434,8 @@ class Circle extends Shape {
 
         // Restore and draw
         context.restore();
+        context.lineWidth = this.strokeSize;
+        context.strokeStyle = this.color;
         context.stroke();
     }
 
@@ -541,8 +563,8 @@ class Circle extends Shape {
     }
 }
 class Line extends Shape {
-    constructor(x, y, color) {
-        super(x, y, color);
+    constructor(x, y, color, strokeSize) {
+        super(x, y, color, strokeSize);
     }
 
     setEnd(x, y) {
@@ -560,6 +582,8 @@ class Line extends Shape {
 
     draw(context) {
         context.beginPath();
+        context.lineWidth = this.strokeSize;
+        context.strokeStyle = this.color;
         context.moveTo(this.x, this.y);
         context.lineTo(this.endX, this.endY);
         context.closePath();
@@ -625,8 +649,8 @@ class Line extends Shape {
     }
 }
 class Pen extends Shape {
-    constructor(x, y, color) {
-        super(x, y, color);
+    constructor(x, y, color, strokeSize) {
+        super(x, y, color, strokeSize);
 
         this.points = [{
             x: x,
@@ -680,35 +704,46 @@ class Pen extends Shape {
         // http://stackoverflow.com/questions/7054272/how-to-draw-smooth-curve-through-n-points-using-javascript-html5-canvas/
 
         context.beginPath();
-        context.moveTo(this.points[0].x, this.points[0].y);
 
-        // Loop if more than 2 points
-        if (2 < this.points.length) {
-            var i = 1;
+        context.lineWidth = this.strokeSize;
+        context.strokeStyle = this.color;
 
-            for (; i < this.points.length - 2; i++) {
-                var endX = (this.points[i].x + this.points[i + 1].x) / 2;
-                var endY = (this.points[i].y + this.points[i + 1].y) / 2;
-
-                context.quadraticCurveTo(this.points[i].x, this.points[i].y, endX, endY);
-            }
-
-            // For the last 2 points
-            context.quadraticCurveTo(
-                this.points[i].x,
-                this.points[i].y,
-                this.points[i + 1].x,
-                this.points[i + 1].y
-            );
+        // Only a single point
+        if (this.points.length === 1) {
+            context.rect(this.points[0].x, this.points[0].y, 1, 1);
         }
-        // Simply bind together if 2 or less points 
+        // More than one point
         else {
-            context.quadraticCurveTo(
-                this.points[0].x,
-                this.points[0].y,
-                this.points[1].x,
-                this.points[1].y
-            );
+            context.moveTo(this.points[0].x, this.points[0].y);
+
+            // Loop if more than 2 points
+            if (2 < this.points.length) {
+                var i = 1;
+
+                for (; i < this.points.length - 2; i++) {
+                    var endX = (this.points[i].x + this.points[i + 1].x) / 2;
+                    var endY = (this.points[i].y + this.points[i + 1].y) / 2;
+
+                    context.quadraticCurveTo(this.points[i].x, this.points[i].y, endX, endY);
+                }
+
+                // For the last 2 points
+                context.quadraticCurveTo(
+                    this.points[i].x,
+                    this.points[i].y,
+                    this.points[i + 1].x,
+                    this.points[i + 1].y
+                );
+            }
+            // Simply bind together if 2 points 
+            else {
+                context.quadraticCurveTo(
+                    this.points[0].x,
+                    this.points[0].y,
+                    this.points[1].x,
+                    this.points[1].y
+                );
+            }
         }
 
         context.stroke();
@@ -727,8 +762,8 @@ class Pen extends Shape {
     }
 }
 class Rectangle extends Shape {
-    constructor(x, y, color) {
-        super(x, y, color);
+    constructor(x, y, color, strokeSize) {
+        super(x, y, color, strokeSize);
     }
 
     setEnd(x, y) {
@@ -767,6 +802,8 @@ class Rectangle extends Shape {
 
     draw(context) {
         context.beginPath();
+        context.lineWidth = this.strokeSize;
+        context.strokeStyle = this.color;
         context.rect(this.x, this.y, this.width, this.height);
         context.stroke();
     }
@@ -807,6 +844,7 @@ class Text extends Shape {
     draw(context) {
         context.beginPath();
         context.font = this.font;
+        context.fillStyle = this.color;
         context.fillText(this.text, this.x, this.y);
     }
 

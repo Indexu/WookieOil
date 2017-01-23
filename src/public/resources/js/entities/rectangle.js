@@ -1,6 +1,6 @@
 class Rectangle extends Shape {
-    constructor(x, y, color) {
-        super(x, y, color);
+    constructor(x, y, color, strokeSize) {
+        super(x, y, color, strokeSize);
     }
 
     setEnd(x, y) {
@@ -39,6 +39,8 @@ class Rectangle extends Shape {
 
     draw(context) {
         context.beginPath();
+        context.lineWidth = this.strokeSize;
+        context.strokeStyle = this.color;
         context.rect(this.x, this.y, this.width, this.height);
         context.stroke();
     }

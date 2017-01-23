@@ -48,26 +48,26 @@ settings.editCanvas.on("mousedown", function (e) {
 
         // No shape was selected => Select rectangle
         if (!settings.moving) {
-            shape = new Rectangle(settings.mouseX, settings.mouseY, settings.nextColor);
+            shape = new Rectangle(settings.mouseX, settings.mouseY, "black", 1);
         }
     }
     // Some shape tool
     else if (!settings.moving) {
         // Rectangle
         if (settings.nextObj === "rectangle") {
-            shape = new Rectangle(settings.mouseX, settings.mouseY, settings.nextColor);
+            shape = new Rectangle(settings.mouseX, settings.mouseY, settings.nextColor, settings.strokeSize);
         }
         // Circle
         else if (settings.nextObj === "circle") {
-            shape = new Circle(settings.mouseX, settings.mouseY, settings.nextColor);
+            shape = new Circle(settings.mouseX, settings.mouseY, settings.nextColor, settings.strokeSize);
         }
         // Line
         else if (settings.nextObj === "line") {
-            shape = new Line(settings.mouseX, settings.mouseY, settings.nextColor);
+            shape = new Line(settings.mouseX, settings.mouseY, settings.nextColor, settings.strokeSize);
         }
         // Pen
         else if (settings.nextObj === "pen") {
-            shape = new Pen(settings.mouseX, settings.mouseY, settings.nextColor);
+            shape = new Pen(settings.mouseX, settings.mouseY, settings.nextColor, settings.strokeSize);
         }
         // Text
         else if (settings.nextObj === "text") {

@@ -1,6 +1,6 @@
 class Circle extends Shape {
-    constructor(x, y, color) {
-        super(x, y, color);
+    constructor(x, y, color, strokeSize) {
+        super(x, y, color, strokeSize);
     }
 
     setEnd(x, y) {
@@ -67,6 +67,8 @@ class Circle extends Shape {
 
         // Restore and draw
         context.restore();
+        context.lineWidth = this.strokeSize;
+        context.strokeStyle = this.color;
         context.stroke();
     }
 

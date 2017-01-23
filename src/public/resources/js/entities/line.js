@@ -1,6 +1,6 @@
 class Line extends Shape {
-    constructor(x, y, color) {
-        super(x, y, color);
+    constructor(x, y, color, strokeSize) {
+        super(x, y, color, strokeSize);
     }
 
     setEnd(x, y) {
@@ -18,6 +18,8 @@ class Line extends Shape {
 
     draw(context) {
         context.beginPath();
+        context.lineWidth = this.strokeSize;
+        context.strokeStyle = this.color;
         context.moveTo(this.x, this.y);
         context.lineTo(this.endX, this.endY);
         context.closePath();
