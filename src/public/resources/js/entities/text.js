@@ -30,6 +30,7 @@ class Text extends Shape {
     draw(context) {
         context.beginPath();
         context.font = this.font;
+        context.fillStyle = this.color;
         context.fillText(this.text, this.x, this.y);
     }
 

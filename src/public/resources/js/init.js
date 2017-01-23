@@ -6,6 +6,7 @@ var settings = {
     textarea: $("#textArea"),
     fontSize: 36,
     font: "roboto",
+    strokeSize: 10,
     nextObj: "pen",
     nextColor: "black",
     currentObj: undefined,
@@ -16,6 +17,9 @@ var settings = {
     mouseX: 0,
     mouseY: 0
 };
+
+// Initialize minicolors colorpicker
+$("#colorPicker").minicolors();
 
 // Update object based on selected tool
 $("input[name='tool']").change(function () {
@@ -30,6 +34,16 @@ $("#undo").on("click", function () {
 // Redo button
 $("#redo").on("click", function () {
     redo(settings.viewCanvas[0], settings.viewContext);
+});
+
+// Stroke size
+$("#strokeSize").on("change", function () {
+    settings.strokeSize = $(this).val();
+});
+
+// Font size
+$("#fontSize").on("change", function () {
+    settings.fontSize = $(this).val();
 });
 
 // Textarea enter key
@@ -50,4 +64,9 @@ $("#textArea").on("keyup", function (e) {
 
         settings.shapes.push(text);
     }
+});
+
+// Color change
+$("#colorPicker").on("change", function () {
+    settings.nextColor = $(this).val();
 });

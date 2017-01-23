@@ -34,3 +34,6 @@ textarea {
   width: 300px;
   resize: none;
   background-color: #fcfcfc; }
+
+.sp-palette {
+  max-width: 200px; }
