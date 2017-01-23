@@ -34,26 +34,46 @@
                     <!-- Undo & Redo -->
                     <div class="row">
                         <div class="col s6 input-field">
-                            <a id="undo" class="waves-effect waves-light btn center tooltipped" data-position="top" data-delay="50" data-tooltip="Undo"><i class="material-icons left">undo</i></a>
+                            <a id="undo" class="waves-effect waves-light btn center tooltipped full-width" data-position="top" data-delay="50" data-tooltip="Undo">
+                                <i class="material-icons center">undo</i>
+                            </a>
                         </div>
                         <div class="col s6 input-field">
-                            <a id="redo" class="waves-effect waves-light btn center tooltipped" data-position="top" data-delay="50" data-tooltip="Redo"><i class="material-icons left">redo</i></a>
+                            <a id="redo" class="waves-effect waves-light btn center tooltipped full-width" data-position="top" data-delay="50" data-tooltip="Redo">
+                                <i class="material-icons center">redo</i>
+                            </a>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col s12">
-                            <input name="tool" type="radio" id="toolRect" value="rectangle" />
-                            <label for="toolRect">Rectangle</label>
-                            <input name="tool" type="radio" id="toolLine" value="line" />
-                            <label for="toolLine">Line</label>
-                            <input name="tool" type="radio" id="toolCircle" value="circle" />
-                            <label for="toolCircle">Circle</label>
-                            <input name="tool" type="radio" id="toolSelect" value="select" />
-                            <label for="toolSelect">Select</label>
-                            <input name="tool" type="radio" id="toolPen" value="pen" checked />
-                            <label for="toolPen">Pen</label>
-                            <input name="tool" type="radio" id="toolText" value="text" />
-                            <label for="toolText">Text</label>
+                            <div class="row">
+                                <div class="col s4">
+                                    <input name="tool" type="radio" id="toolRect" value="rectangle" />
+                                    <label for="toolRect">Rectangle</label>
+                                </div>
+                                <div class="col s4">
+                                    <input name="tool" type="radio" id="toolCircle" value="circle" />
+                                    <label for="toolCircle">Circle</label>
+                                </div>
+                                <div class="col s4">
+                                    <input name="tool" type="radio" id="toolLine" value="line" />
+                                    <label for="toolLine">Line</label>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col s4">
+                                    <input name="tool" type="radio" id="toolPen" value="pen" checked />
+                                    <label for="toolPen">Pen</label>
+                                </div>
+                                <div class="col s4">
+                                    <input name="tool" type="radio" id="toolText" value="text" />
+                                    <label for="toolText">Text</label>
+                                </div>
+                                <div class="col s4">
+                                    <input name="tool" type="radio" id="toolSelect" value="select" />
+                                    <label for="toolSelect">Select</label>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="row">
