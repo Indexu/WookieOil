@@ -25,6 +25,11 @@ $(document).ready(function () {
 
     // Initialize minicolors colorpicker
     $("#colorPicker").minicolors();
+
+    // Tooltips
+    $(".tooltipped").tooltip({
+        delay: 50
+    });
 });
 
 // Update object based on selected tool

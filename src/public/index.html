@@ -23,69 +23,81 @@
         </header>
         <!-- Main -->
         <main>
-            <div class="container">
-                <div class="row"></div>
-                <!-- Toolbar -->
-                <div class="row">
-                    <div class="col s8 offset-s2">
-                        <input name="tool" type="radio" id="toolRect" value="rectangle" />
-                        <label for="toolRect">Rectangle</label>
-                        <input name="tool" type="radio" id="toolLine" value="line" />
-                        <label for="toolLine">Line</label>
-                        <input name="tool" type="radio" id="toolCircle" value="circle" />
-                        <label for="toolCircle">Circle</label>
-                        <input name="tool" type="radio" id="toolSelect" value="select" />
-                        <label for="toolSelect">Select</label>
-                        <input name="tool" type="radio" id="toolPen" value="pen" checked />
-                        <label for="toolPen">Pen</label>
-                        <input name="tool" type="radio" id="toolText" value="text" />
-                        <label for="toolText">Text</label>
-                        <a id="undo" class="waves-effect waves-light btn"><i class="material-icons left">undo</i></a>
-                        <a id="redo" class="waves-effect waves-light btn"><i class="material-icons left">redo</i></a>
-                        <input type="hidden" id="colorPicker" value="#000" />
-                    </div>
+            <div class="row"></div>
+            <!-- Canvas -->
+            <div class="row">
+                <div class="col s9 canvasContainer">
+                    <canvas id="editCanvas" width="1000" height="600"></canvas>
+                    <canvas id="viewCanvas" width="1000" height="600"></canvas>
                 </div>
-                <div class="row">
-                    <div class="col s2 offset-s2 input-field">
-                        <select id="fontType">
+                <div class="col s3">
+                    <!-- Undo & Redo -->
+                    <div class="row">
+                        <div class="col s6 input-field">
+                            <a id="undo" class="waves-effect waves-light btn center tooltipped" data-position="top" data-delay="50" data-tooltip="Undo"><i class="material-icons left">undo</i></a>
+                        </div>
+                        <div class="col s6 input-field">
+                            <a id="redo" class="waves-effect waves-light btn center tooltipped" data-position="top" data-delay="50" data-tooltip="Redo"><i class="material-icons left">redo</i></a>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col s12">
+                            <input name="tool" type="radio" id="toolRect" value="rectangle" />
+                            <label for="toolRect">Rectangle</label>
+                            <input name="tool" type="radio" id="toolLine" value="line" />
+                            <label for="toolLine">Line</label>
+                            <input name="tool" type="radio" id="toolCircle" value="circle" />
+                            <label for="toolCircle">Circle</label>
+                            <input name="tool" type="radio" id="toolSelect" value="select" />
+                            <label for="toolSelect">Select</label>
+                            <input name="tool" type="radio" id="toolPen" value="pen" checked />
+                            <label for="toolPen">Pen</label>
+                            <input name="tool" type="radio" id="toolText" value="text" />
+                            <label for="toolText">Text</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col s12">
+                            <span class="tooltipped" data-position="top" data-delay="50" data-tooltip="Color">
+                                <input type="hidden" id="colorPicker" value="#000" />
+                            </span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col s12 input-field">
+                            <select id="fontType">
                             <option value="roboto" selected>Roboto</option>
                             <option value="arial">Arial</option>
                             <option value="times">Times New Roman</option>
                             <option value="courier new">Courier New</option>
                         </select>
-                        <label>Font</label>
+                            <label>Font</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col s2">
+                            <p>Stroke width:</p>
+                        </div>
+                        <div class="col s6">
+                            <p class="range-field">
+                                <input type="range" id="strokeSize" min="1" max="72" value="10" />
+                            </p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col s2">
+                            <p>Font size:</p>
+                        </div>
+                        <div class="col s6">
+                            <p class="range-field">
+                                <input type="range" id="fontSize" min="1" max="72" value="16" />
+                            </p>
+                        </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col s2 offset-s2">
-                        <p>Stroke width:</p>
-                    </div>
-                    <div class="col s6">
-                        <p class="range-field">
-                            <input type="range" id="strokeSize" min="1" max="72" value="10" />
-                        </p>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col s2 offset-s2">
-                        <p>Font size:</p>
-                    </div>
-                    <div class="col s6">
-                        <p class="range-field">
-                            <input type="range" id="fontSize" min="1" max="72" value="16" />
-                        </p>
-                    </div>
-                </div>
-                <!-- Canvas -->
-                <div class="row">
-                    <div class="col s12 canvasContainer">
-                        <canvas id="editCanvas" width="800" height="600"></canvas>
-                        <canvas id="viewCanvas" width="800" height="600"></canvas>
-                    </div>
-                </div>
-                <!-- Textarea -->
-                <textarea id="textArea" rows="3" cols="20"></textarea>
             </div>
+            <!-- Textarea -->
+            <textarea id="textArea" rows="3" cols="20"></textarea>
         </main>
         <!-- Footer -->
         <footer class="page-footer white">
