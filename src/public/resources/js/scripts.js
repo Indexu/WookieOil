@@ -18,11 +18,17 @@ var settings = {
     mouseY: 0
 };
 
-// Initialize minicolors colorpicker
-$("#colorPicker").minicolors();
+// Initialize stuff
+$(document).ready(function () {
+    // Material select
+    $("#fontType").material_select();
+
+    // Initialize minicolors colorpicker
+    $("#colorPicker").minicolors();
+});
 
 // Update object based on selected tool
-$("input[name='tool']").change(function () {
+$("input[name='tool']").on("change", function () {
     settings.nextObj = $(this).val();
 });
 
@@ -44,6 +50,12 @@ $("#strokeSize").on("change", function () {
 // Font size
 $("#fontSize").on("change", function () {
     settings.fontSize = $(this).val();
+});
+
+// Font change
+$("#fontType").on("change", function () {
+    settings.font = $(this).val();
+    settings.textarea.css("font-family", settings.font);
 });
 
 // Textarea enter key
@@ -258,13 +270,11 @@ settings.editCanvas.on("mouseup", function (e) {
 });
 // Update mouse coordinates in settings
 function updateMousePosition(e) {
-    if (e.offsetX) {
-        settings.mouseX = e.offsetX;
-        settings.mouseY = e.offsetY;
-    } else if (e.layerX) {
-        settings.mouseX = e.layerX;
-        settings.mouseY = e.layerY;
-    }
+
+    var rect = settings.viewCanvas[0].getBoundingClientRect();
+
+    settings.mouseX = e.clientX - rect.left;
+    settings.mouseY = e.clientY - rect.top;
 }
 
 // Clear a canvas

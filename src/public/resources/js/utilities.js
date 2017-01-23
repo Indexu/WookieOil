@@ -1,12 +1,10 @@
 // Update mouse coordinates in settings
 function updateMousePosition(e) {
-    if (e.offsetX) {
-        settings.mouseX = e.offsetX;
-        settings.mouseY = e.offsetY;
-    } else if (e.layerX) {
-        settings.mouseX = e.layerX;
-        settings.mouseY = e.layerY;
-    }
+
+    var rect = settings.viewCanvas[0].getBoundingClientRect();
+
+    settings.mouseX = e.clientX - rect.left;
+    settings.mouseY = e.clientY - rect.top;
 }
 
 // Clear a canvas
