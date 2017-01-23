@@ -16,7 +16,7 @@ canvas {
   margin: 0;
   display: block; }
 
-.card {
+.hide-on-small-only .card {
   height: 595px;
   margin: inherit;
   margin-right: 2em; }
