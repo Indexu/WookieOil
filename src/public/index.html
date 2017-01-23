@@ -26,100 +26,104 @@
             <div class="row"></div>
             <!-- Canvas -->
             <div class="row">
-                <div class="col s9 canvasContainer">
-                    <canvas id="editCanvas" width="1000" height="600"></canvas>
-                    <canvas id="viewCanvas" width="1000" height="600" class="white"></canvas>
+                <div class="col s8 canvasContainer">
+                    <canvas id="editCanvas" width="950" height="600"></canvas>
+                    <canvas id="viewCanvas" width="950" height="600" class="white"></canvas>
                 </div>
-                <div class="col s3">
-                    <!-- Undo & Redo -->
-                    <div class="row">
-                        <div class="col s6 input-field">
-                            <a id="undo" class="waves-effect waves-light btn tooltipped full-width disabled" data-position="top" data-delay="50" data-tooltip="Undo">
-                                <i class="material-icons center">undo</i>
-                            </a>
-                        </div>
-                        <div class="col s6 input-field">
-                            <a id="redo" class="waves-effect waves-light btn tooltipped full-width disabled" data-position="top" data-delay="50" data-tooltip="Redo">
-                                <i class="material-icons center">redo</i>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col s12">
+                <div class="col s4">
+                    <div class="card container">
+                        <div class="card-content center">
+                            <!-- Undo & Redo -->
                             <div class="row">
-                                <div class="col s4">
-                                    <a class="waves-effect waves-light btn light-blue accent-1 full-width tool tooltipped" data-position="top" data-delay="50"
-                                        data-tooltip="Rectangle" data-value="rectangle">
-                                        <i class="material-icons center">crop_5_4</i>
-                                        </a>
+                                <div class="col s6 input-field">
+                                    <a id="undo" class="waves-effect waves-light btn tooltipped full-width disabled" data-position="top" data-delay="50" data-tooltip="Undo">
+                                        <i class="material-icons center">undo</i>
+                                    </a>
                                 </div>
-                                <div class="col s4">
-                                    <a class="waves-effect waves-light btn light-blue accent-1 full-width tool tooltipped" data-position="top" data-delay="50"
-                                        data-tooltip="Circle" data-value="circle">
-                                        <i class="material-icons center">panorama_fish_eye</i>
-                                        </a>
-                                </div>
-                                <div class="col s4">
-                                    <a class="waves-effect waves-light btn light-blue accent-1 full-width tool tooltipped" data-position="top" data-delay="50"
-                                        data-tooltip="Line" data-value="line">
-                                        <i class="material-icons center">remove</i>
-                                        </a>
+                                <div class="col s6 input-field">
+                                    <a id="redo" class="waves-effect waves-light btn tooltipped full-width disabled" data-position="top" data-delay="50" data-tooltip="Redo">
+                                        <i class="material-icons center">redo</i>
+                                    </a>
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col s4">
-                                    <a class="waves-effect waves-light btn full-width tool tooltipped" data-position="top" data-delay="50" data-tooltip="Pen"
-                                        data-value="pen">
-                                        <i class="material-icons center">create</i>
-                                        </a>
-                                </div>
-                                <div class="col s4">
-                                    <a class="waves-effect waves-light btn light-blue accent-1 full-width tool tooltipped" data-position="top" data-delay="50"
-                                        data-tooltip="Text" data-value="text">
-                                        <i class="material-icons center">text_fields</i>
-                                        </a>
-                                </div>
-                                <div class="col s4">
-                                    <a class="waves-effect waves-light btn light-blue accent-1 full-width tool tooltipped" data-position="top" data-delay="50"
-                                        data-tooltip="Select" data-value="select">
-                                        <i class="material-icons center">select_all</i>
-                                        </a>
+                                <div class="col s12">
+                                    <div class="row">
+                                        <div class="col s4">
+                                            <a class="waves-effect waves-light btn light-blue accent-1 full-width tool tooltipped" data-position="top" data-delay="50"
+                                                data-tooltip="Rectangle" data-value="rectangle">
+                                                <i class="material-icons center">crop_5_4</i>
+                                                </a>
+                                        </div>
+                                        <div class="col s4">
+                                            <a class="waves-effect waves-light btn light-blue accent-1 full-width tool tooltipped" data-position="top" data-delay="50"
+                                                data-tooltip="Circle" data-value="circle">
+                                                <i class="material-icons center">panorama_fish_eye</i>
+                                                </a>
+                                        </div>
+                                        <div class="col s4">
+                                            <a class="waves-effect waves-light btn light-blue accent-1 full-width tool tooltipped" data-position="top" data-delay="50"
+                                                data-tooltip="Line" data-value="line">
+                                                <i class="material-icons center">remove</i>
+                                                </a>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col s4">
+                                            <a class="waves-effect waves-light btn full-width tool tooltipped" data-position="top" data-delay="50" data-tooltip="Pen"
+                                                data-value="pen">
+                                                <i class="material-icons center">create</i>
+                                                </a>
+                                        </div>
+                                        <div class="col s4">
+                                            <a class="waves-effect waves-light btn light-blue accent-1 full-width tool tooltipped" data-position="top" data-delay="50"
+                                                data-tooltip="Text" data-value="text">
+                                                <i class="material-icons center">text_fields</i>
+                                                </a>
+                                        </div>
+                                        <div class="col s4">
+                                            <a class="waves-effect waves-light btn light-blue accent-1 full-width tool tooltipped" data-position="top" data-delay="50"
+                                                data-tooltip="Select" data-value="select">
+                                                <i class="material-icons center">select_all</i>
+                                                </a>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col s12">
-                            <span class="tooltipped full-width" data-position="top" data-delay="50" data-tooltip="Color">
+                            <div class="row">
+                                <div class="col s12">
+                                    <span class="tooltipped full-width" data-position="top" data-delay="50" data-tooltip="Color">
                                 <input type="hidden" id="colorPicker" value="#000" />
                             </span>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col s12 input-field">
-                            <select id="fontType">
-                            <option value="roboto" selected>Roboto</option>
-                            <option value="arial">Arial</option>
-                            <option value="times">Times New Roman</option>
-                            <option value="courier new">Courier New</option>
-                        </select>
-                            <label>Font</label>
-                        </div>
-                        <div class="col s4">
-                            <p>Stroke width</p>
-                        </div>
-                        <div class="col s8">
-                            <p class="range-field">
-                                <input type="range" id="strokeSize" min="1" max="72" value="10" />
-                            </p>
-                        </div>
-                        <div class="col s4">
-                            <p>Font size</p>
-                        </div>
-                        <div class="col s8">
-                            <p class="range-field">
-                                <input type="range" id="fontSize" min="1" max="72" value="16" />
-                            </p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col s12 input-field">
+                                    <select id="fontType">
+                                        <option value="roboto" selected>Roboto</option>
+                                        <option value="arial">Arial</option>
+                                        <option value="times">Times New Roman</option>
+                                        <option value="courier new">Courier New</option>
+                                    </select>
+                                    <label>Font</label>
+                                </div>
+                                <div class="col s4">
+                                    <p>Stroke width</p>
+                                </div>
+                                <div class="col s8">
+                                    <p class="range-field">
+                                        <input type="range" id="strokeSize" min="1" max="72" value="10" />
+                                    </p>
+                                </div>
+                                <div class="col s4">
+                                    <p>Font size</p>
+                                </div>
+                                <div class="col s8">
+                                    <p class="range-field">
+                                        <input type="range" id="fontSize" min="1" max="72" value="16" />
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

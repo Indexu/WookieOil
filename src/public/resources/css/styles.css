@@ -12,16 +12,22 @@ main {
 canvas {
   padding-left: 0;
   padding-right: 0;
-  margin-left: auto;
+  margin-left: 3em;
   margin-right: auto;
   display: block;
-  width: 1000px; }
+  width: 950px; }
+
+.card {
+  height: 590px;
+  margin: inherit;
+  margin-right: 3em; }
 
 #editCanvas {
   position: absolute;
   top: 0;
   left: 0;
-  right: 0; }
+  right: 0;
+  margin-left: 56px; }
 
 textarea {
   position: absolute;
