@@ -7,6 +7,16 @@ function updateMousePosition(e) {
     settings.mouseY = e.clientY - rect.top;
 }
 
+// Resize the canvases
+function resize() {
+    var containerWidth = $(".canvasContainer").width();
+
+    settings.viewContext.canvas.width = containerWidth;
+    settings.editContext.canvas.width = containerWidth;
+
+    redraw(settings.viewCanvas[0], settings.viewContext, settings.shapes);
+}
+
 // Clear a canvas
 function clearCanvas(canvas, context) {
     context.clearRect(0, 0, canvas.width, canvas.height);

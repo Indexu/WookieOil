@@ -30,6 +30,13 @@ $(document).ready(function () {
     $(".tooltipped").tooltip({
         delay: 50
     });
+
+    // Resize the canvases
+    resize();
+});
+
+$(window).on("resize", function () {
+    resize();
 });
 
 // Update object based on selected tool
@@ -74,17 +81,26 @@ $("#textArea").on("keyup", function (e) {
     var code = (e.keyCode ? e.keyCode : e.which);
     // Enter keycode is 13
     if (code === 13) {
+        // Hide text area
         $(this).hide();
 
+        // Make up the font
         var font = settings.fontSize + "px " + settings.font;
 
+        // Create the text
         var text = new Text(settings.mouseX, settings.mouseY + (settings.fontSize / 2), settings.nextColor, $(this).val(), font, settings.fontSize, settings.viewContext);
 
+        // Reset textarea
         $(this).val("");
 
+        // Draw text
         text.draw(settings.viewContext);
 
+        // Add to shapes
         settings.shapes.push(text);
+
+        // Enable undo
+        enableUndo(true);
     }
 });
 

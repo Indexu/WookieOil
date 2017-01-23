@@ -160,15 +160,17 @@ settings.editCanvas.on("mouseup", function (e) {
         }
         // Draw the object to the view canvas 
         else {
+            if ((settings.currentObj.x !== settings.mouseX || settings.currentObj.y !== settings.mouseY) ||
+                settings.nextObj === "pen") {
+                // Push to shapes
+                settings.shapes.push(settings.currentObj);
 
-            // Push to shapes
-            settings.shapes.push(settings.currentObj);
+                // Enable undo
+                enableUndo(true);
 
-            // Enable undo
-            enableUndo(true);
-
-            // Draw to view context
-            settings.currentObj.draw(settings.viewContext);
+                // Draw to view context
+                settings.currentObj.draw(settings.viewContext);
+            }
         }
 
         // Remove the current object

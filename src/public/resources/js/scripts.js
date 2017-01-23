@@ -30,6 +30,13 @@ $(document).ready(function () {
     $(".tooltipped").tooltip({
         delay: 50
     });
+
+    // Resize the canvases
+    resize();
+});
+
+$(window).on("resize", function () {
+    resize();
 });
 
 // Update object based on selected tool
@@ -74,17 +81,26 @@ $("#textArea").on("keyup", function (e) {
     var code = (e.keyCode ? e.keyCode : e.which);
     // Enter keycode is 13
     if (code === 13) {
+        // Hide text area
         $(this).hide();
 
+        // Make up the font
         var font = settings.fontSize + "px " + settings.font;
 
+        // Create the text
         var text = new Text(settings.mouseX, settings.mouseY + (settings.fontSize / 2), settings.nextColor, $(this).val(), font, settings.fontSize, settings.viewContext);
 
+        // Reset textarea
         $(this).val("");
 
+        // Draw text
         text.draw(settings.viewContext);
 
+        // Add to shapes
         settings.shapes.push(text);
+
+        // Enable undo
+        enableUndo(true);
     }
 });
 
@@ -264,15 +280,17 @@ settings.editCanvas.on("mouseup", function (e) {
         }
         // Draw the object to the view canvas 
         else {
+            if ((settings.currentObj.x !== settings.mouseX || settings.currentObj.y !== settings.mouseY) ||
+                settings.nextObj === "pen") {
+                // Push to shapes
+                settings.shapes.push(settings.currentObj);
 
-            // Push to shapes
-            settings.shapes.push(settings.currentObj);
+                // Enable undo
+                enableUndo(true);
 
-            // Enable undo
-            enableUndo(true);
-
-            // Draw to view context
-            settings.currentObj.draw(settings.viewContext);
+                // Draw to view context
+                settings.currentObj.draw(settings.viewContext);
+            }
         }
 
         // Remove the current object
@@ -290,6 +308,16 @@ function updateMousePosition(e) {
 
     settings.mouseX = e.clientX - rect.left;
     settings.mouseY = e.clientY - rect.top;
+}
+
+// Resize the canvases
+function resize() {
+    var containerWidth = $(".canvasContainer").width();
+
+    settings.viewContext.canvas.width = containerWidth;
+    settings.editContext.canvas.width = containerWidth;
+
+    redraw(settings.viewCanvas[0], settings.viewContext, settings.shapes);
 }
 
 // Clear a canvas

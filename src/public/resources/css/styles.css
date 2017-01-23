@@ -7,27 +7,26 @@ main {
   flex: 1 0 auto; }
 
 .canvasContainer {
-  position: relative; }
+  position: relative;
+  margin-left: 2em; }
 
 canvas {
   padding-left: 0;
   padding-right: 0;
-  margin-left: 3em;
-  margin-right: auto;
-  display: block;
-  width: 950px; }
+  margin: 0;
+  display: block; }
 
 .card {
-  height: 590px;
+  height: 595px;
   margin: inherit;
-  margin-right: 3em; }
+  margin-right: 2em; }
 
 #editCanvas {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  margin-left: 56px; }
+  padding: inherit; }
 
 textarea {
   position: absolute;
@@ -49,3 +48,9 @@ textarea {
 
 .minicolors-swatch-color {
   border-radius: 3px; }
+
+label {
+  user-select: none; }
+
+.tool {
+  padding: 0; }

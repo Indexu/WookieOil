@@ -10,21 +10,20 @@ main {
 
 .canvasContainer {
     position: relative;
+    margin-left: 2em;
 }
 
 canvas {
     padding-left: 0;
     padding-right: 0;
-    margin-left: 3em;
-    margin-right: auto;
+    margin: 0;
     display: block;
-    width: 950px;
 }
 
 .card {
-    height: 590px;
+    height: 595px;
     margin: inherit;
-    margin-right: 3em;
+    margin-right: 2em;
 }
 
 #editCanvas {
@@ -32,7 +31,7 @@ canvas {
     top: 0;
     left: 0;
     right: 0;
-    margin-left: 56px;
+    padding: inherit;
 }
 
 textarea {
@@ -59,4 +58,12 @@ textarea {
 
 .minicolors-swatch-color {
     border-radius: 3px;
+}
+
+label {
+    user-select: none;
+}
+
+.tool {
+    padding: 0;
 }
