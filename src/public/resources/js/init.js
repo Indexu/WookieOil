@@ -20,16 +20,19 @@ var settings = {
 
 // Initialize stuff
 $(document).ready(function () {
-    // Material select
+    // Materialize Select
     $("#fontType").material_select();
 
-    // Initialize minicolors colorpicker
-    $("#colorPicker").minicolors();
+    // Materialize Modals
+    $(".modal").modal();
 
-    // Tooltips
+    // Materialize Tooltips
     $(".tooltipped").tooltip({
         delay: 50
     });
+
+    // Initialize minicolors colorpicker
+    $("#colorPicker").minicolors();
 
     // Resize the canvases
     resize();
@@ -73,6 +76,27 @@ $("#fontSize").on("change", function () {
 $("#fontType").on("change", function () {
     settings.font = $(this).val();
     settings.textarea.css("font-family", settings.font);
+});
+
+// Save name input
+$("#saveName").on("input", function () {
+    console.log("oil");
+    // Disable button if nothing is typed
+    if ($(this).val() === "") {
+        $("#saveButton").addClass("disabled");
+    }
+    // Enable button if something is typed
+    else {
+        $("#saveButton").removeClass("disabled");
+    }
+});
+
+// Click on a save
+$("#saves > a").on("click", function () {
+    $("#saves > a").removeClass("active");
+    $(this).addClass("active");
+
+    $("#loadButton").removeClass("disabled");
 });
 
 // Textarea enter key

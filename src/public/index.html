@@ -16,8 +16,19 @@
         <!-- Header -->
         <header class="navbar-fixed" style="z-index: 999">
             <nav class="blue lighten-1" role="navigation">
-                <div class="nav-wrapper container">
-                    <a id="logo-container" href="#" class="brand-logo center">WookieOil</a>
+                <div class="nav-wrapper">
+                    <div class="row">
+                        <div class="col s8">
+                            <a href="#" class="brand-logo center">WookieOil</a>
+                        </div>
+                        <div class="col s3">
+                            <ul id="nav-mobile" class="right hide-on-small-only">
+                                <li>
+                                    <a href="#saveModal">Save &amp; Load</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </nav>
         </header>
@@ -155,6 +166,39 @@
                 </div>
             </div>
         </main>
+        <!-- Save modal -->
+        <div id="saveModal" class="modal">
+            <div class="modal-content">
+                <h4 class="center">Save &amp; Load</h4>
+                <div class="divider"></div>
+                <div class="row"></div>
+                <label for="saveRow">Save</label>
+                <div id="saveRow" class="row">
+                    <div class="col s12">
+                        <input id="saveName" type="text" placeholder="Save name">
+                    </div>
+                    <div class="col s12">
+                        <a href="#!" id="saveButton" class=" modal-action modal-close waves-effect waves-light btn full-width disabled">Save</a>
+                    </div>
+                </div>
+                <div class="row"></div>
+                <label for="loadRow">Load</label>
+                <div id="loadRow" class="row">
+                    <div class="col s12">
+                        <div id="saves" class="collection">
+                            <a href="#!" class="collection-item">Save 1</a>
+                            <a href="#!" class="collection-item">Save 2</a>
+                            <a href="#!" class="collection-item">Save 3</a>
+                            <a href="#!" class="collection-item">Save 4</a>
+                            <a href="#!" class="collection-item">Save 5</a>
+                        </div>
+                    </div>
+                    <div class="col s12">
+                        <a href="#!" id="loadButton" class=" modal-action modal-close waves-effect waves-light btn full-width disabled">Load</a>
+                    </div>
+                </div>
+            </div>
+        </div>
         <!-- Footer -->
         <footer class="page-footer light-blue lighten-5">
             <div class="footer-copyright blue darken-4">
