@@ -4,6 +4,7 @@ var settings = {
     editCanvas: $("#editCanvas"),
     editContext: $("#editCanvas")[0].getContext("2d"),
     textarea: $("#textArea"),
+    savesList: $("#saves"),
     fontSize: 36,
     font: "roboto",
     strokeSize: 10,
@@ -20,21 +21,28 @@ var settings = {
 
 // Initialize stuff
 $(document).ready(function () {
-    // Material select
+    // Materialize Select
     $("#fontType").material_select();
 
-    // Initialize minicolors colorpicker
-    $("#colorPicker").minicolors();
+    // Materialize Modals
+    $(".modal").modal();
 
-    // Tooltips
+    // Materialize Tooltips
     $(".tooltipped").tooltip({
         delay: 50
     });
 
+    // Initialize minicolors colorpicker
+    $("#colorPicker").minicolors();
+
     // Resize the canvases
     resize();
+
+    // Populate saves
+    populateSaves();
 });
 
+// Resize the canvas width dynamically
 $(window).on("resize", function () {
     resize();
 });
@@ -59,6 +67,11 @@ $("#redo").on("click", function () {
     redo(settings.viewCanvas[0], settings.viewContext);
 });
 
+// Color change
+$("#colorPicker").on("change", function () {
+    settings.nextColor = $(this).val();
+});
+
 // Stroke size
 $("#strokeSize").on("change", function () {
     settings.strokeSize = $(this).val();
@@ -73,6 +86,26 @@ $("#fontSize").on("change", function () {
 $("#fontType").on("change", function () {
     settings.font = $(this).val();
     settings.textarea.css("font-family", settings.font);
+});
+
+// Save name input
+$("#saveName").on("input", function () {
+    // Disable button if nothing is typed
+    if ($(this).val() === "") {
+        $("#saveButton").addClass("disabled");
+    }
+    // Enable button if something is typed
+    else {
+        $("#saveButton").removeClass("disabled");
+    }
+});
+
+// Click on a save
+$(document).on("click", ".save", function () {
+    $(".save").removeClass("active");
+    $(this).addClass("active");
+
+    $("#loadButton").removeClass("disabled");
 });
 
 // Textarea enter key
@@ -108,18 +141,101 @@ $("#textArea").on("keyup", function (e) {
     }
 });
 
-// Color change
-$("#colorPicker").on("change", function () {
-    settings.nextColor = $(this).val();
+// Click on save button
+$("#saveButton").on("click", function () {
+    var saveName = $("#saveName").val();
+
+    var postData = JSON.stringify({
+        title: saveName,
+        content: settings.shapes
+    });
+
+    $.ajax({
+        type: "POST",
+        url: "/api/drawings",
+        data: postData,
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (data) {
+            console.log(data);
+        },
+        failure: function (errMsg) {
+            console.log(errMsg);
+        }
+    });
+});
+
+// Click on load button
+$("#loadButton").on("click", function () {
+    // Get the ID of the save
+    var saveID = $(".save.active").attr("data-id");
+
+    // Get save
+    $.ajax({
+        type: "GET",
+        url: "/api/drawings/" + saveID,
+        dataType: "json",
+        success: function (data) {
+            loadSave(data.content);
+        },
+        failure: function (errMsg) {
+            console.log(errMsg);
+        }
+    });
+
+    // Load the save, map to classes and redraw
+    function loadSave(shapes) {
+        // Empty shapes
+        settings.shapes = [];
+
+        // Loop over objects
+        for (var obj in shapes) {
+            var shape = undefined;
+
+            // Identify the current object
+            if (shapes[obj].identifier === "rectangle") {
+                shape = new Rectangle();
+            } else if (shapes[obj].identifier === "circle") {
+                shape = new Circle();
+            } else if (shapes[obj].identifier === "line") {
+                shape = new Line();
+            } else if (shapes[obj].identifier === "text") {
+                shape = new Text(undefined, undefined, undefined, undefined, undefined, undefined, settings.viewContext);
+            } else if (shapes[obj].identifier === "pen") {
+                shape = new Pen();
+            }
+
+            // Override properties of the shape and add to shapes
+            if (shape) {
+                shape.override(shapes[obj]);
+                settings.shapes.push(shape);
+            }
+        }
+
+        // Redraw the view canvas
+        redraw(settings.viewCanvas[0], settings.viewContext, settings.shapes);
+    }
+
+
 });
 class Shape {
-    constructor(x, y, color, strokeSize = undefined) {
+    constructor(x, y, color, identifier, strokeSize = undefined) {
         this.x = x;
         this.y = y;
         this.endX = x;
         this.endY = y;
         this.color = color;
+        this.identifier = identifier;
         this.strokeSize = strokeSize;
+    }
+
+    // Override every value in this object with the values of obj
+    // Reference: Oliver Moran @ StackOverflow (http://stackoverflow.com/users/681800/oliver-moran)
+    // http://stackoverflow.com/questions/5873624/parse-json-string-into-a-particular-object-prototype-in-javascript
+    override(obj) {
+        for (var prop in obj) {
+            this[prop] = obj[prop];
+        }
     }
 }
 // Edit - mousedown
@@ -455,9 +571,32 @@ function showTextarea(e, textarea) {
 
     textarea.focus();
 }
+
+// Populate saves list
+function populateSaves() {
+    $.ajax({
+        type: "GET",
+        url: "/api/drawings",
+        dataType: "json",
+        success: function (data) {
+            // Clear list
+            settings.savesList.html("");
+
+            // Loop over saves and append
+            for (var i = 0; i < data.length; i++) {
+                var save = data[i];
+                var item = "<a href=\"#!\" class=\"collection-item save\" data-id=" + save.id + ">" + save.title + "</a>";
+                settings.savesList.append(item);
+            }
+        },
+        failure: function (errMsg) {
+            console.log(errMsg);
+        }
+    });
+}
 class Circle extends Shape {
     constructor(x, y, color, strokeSize) {
-        super(x, y, color, strokeSize);
+        super(x, y, color, "circle", strokeSize);
     }
 
     setEnd(x, y) {
@@ -654,7 +793,7 @@ class Circle extends Shape {
 }
 class Line extends Shape {
     constructor(x, y, color, strokeSize) {
-        super(x, y, color, strokeSize);
+        super(x, y, color, "line", strokeSize);
     }
 
     setEnd(x, y) {
@@ -740,7 +879,7 @@ class Line extends Shape {
 }
 class Pen extends Shape {
     constructor(x, y, color, strokeSize) {
-        super(x, y, color, strokeSize);
+        super(x, y, color, "pen", strokeSize);
 
         this.points = [{
             x: x,
@@ -853,7 +992,7 @@ class Pen extends Shape {
 }
 class Rectangle extends Shape {
     constructor(x, y, color, strokeSize) {
-        super(x, y, color, strokeSize);
+        super(x, y, color, "rectangle", strokeSize);
     }
 
     setEnd(x, y) {
@@ -904,7 +1043,7 @@ class Rectangle extends Shape {
 }
 class Text extends Shape {
     constructor(x, y, color, text, font, px, context) {
-        super(x, y, color);
+        super(x, y, color, "text");
 
         context.font = font;
 

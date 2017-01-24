@@ -1,6 +1,6 @@
 class Pen extends Shape {
     constructor(x, y, color, strokeSize) {
-        super(x, y, color, strokeSize);
+        super(x, y, color, "pen", strokeSize);
 
         this.points = [{
             x: x,

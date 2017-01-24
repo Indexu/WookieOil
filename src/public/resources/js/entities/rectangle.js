@@ -1,6 +1,6 @@
 class Rectangle extends Shape {
     constructor(x, y, color, strokeSize) {
-        super(x, y, color, strokeSize);
+        super(x, y, color, "rectangle", strokeSize);
     }
 
     setEnd(x, y) {

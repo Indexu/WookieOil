@@ -54,3 +54,7 @@ label {
 
 .tool {
   padding: 0; }
+
+.collection {
+  max-height: 173px;
+  overflow: auto; }

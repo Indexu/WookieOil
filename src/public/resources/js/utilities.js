@@ -148,3 +148,26 @@ function showTextarea(e, textarea) {
 
     textarea.focus();
 }
+
+// Populate saves list
+function populateSaves() {
+    $.ajax({
+        type: "GET",
+        url: "/api/drawings",
+        dataType: "json",
+        success: function (data) {
+            // Clear list
+            settings.savesList.html("");
+
+            // Loop over saves and append
+            for (var i = 0; i < data.length; i++) {
+                var save = data[i];
+                var item = "<a href=\"#!\" class=\"collection-item save\" data-id=" + save.id + ">" + save.title + "</a>";
+                settings.savesList.append(item);
+            }
+        },
+        failure: function (errMsg) {
+            console.log(errMsg);
+        }
+    });
+}

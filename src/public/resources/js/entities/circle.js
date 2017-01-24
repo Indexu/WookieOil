@@ -1,6 +1,6 @@
 class Circle extends Shape {
     constructor(x, y, color, strokeSize) {
-        super(x, y, color, strokeSize);
+        super(x, y, color, "circle", strokeSize);
     }
 
     setEnd(x, y) {

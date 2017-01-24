@@ -1,6 +1,6 @@
 class Text extends Shape {
     constructor(x, y, color, text, font, px, context) {
-        super(x, y, color);
+        super(x, y, color, "text");
 
         context.font = font;
 
