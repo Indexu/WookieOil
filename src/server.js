@@ -20,6 +20,7 @@ app.use(bodyParser.json());
 // Static files
 app.use(express.static(path.join(__dirname, "public")));
 
+// In memory "database"
 var db = {
     drawings: [],
     templates: []

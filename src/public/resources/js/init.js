@@ -62,6 +62,11 @@ $("#redo").on("click", function () {
     redo(settings.viewCanvas[0], settings.viewContext);
 });
 
+// Color change
+$("#colorPicker").on("change", function () {
+    settings.nextColor = $(this).val();
+});
+
 // Stroke size
 $("#strokeSize").on("change", function () {
     settings.strokeSize = $(this).val();
@@ -132,7 +137,62 @@ $("#textArea").on("keyup", function (e) {
     }
 });
 
-// Color change
-$("#colorPicker").on("change", function () {
-    settings.nextColor = $(this).val();
+// Click on save button
+$("#saveButton").on("click", function () {
+    var saveName = $("#saveName").val();
+
+    var postData = JSON.stringify({
+        title: saveName,
+        content: settings.shapes
+    });
+
+    $.ajax({
+        type: "POST",
+        url: "/api/drawings",
+        data: postData,
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (data) {
+            console.log(data);
+        },
+        failure: function (errMsg) {
+            console.log(errMsg);
+        }
+    });
+});
+
+// Click on load button
+$("#loadButton").on("click", function () {
+    // Empty shapes
+    settings.shapes = [];
+
+    // Parse JSON string
+    var shapes = JSON.parse(); // TODO: Give JSON string
+
+    // Loop over objects
+    for (var obj in shapes) {
+        var shape = undefined;
+
+        // Identify the current object
+        if (shapes[obj].identifier === "rectangle") {
+            shape = new Rectangle();
+        } else if (shapes[obj].identifier === "circle") {
+            shape = new Circle();
+        } else if (shapes[obj].identifier === "line") {
+            shape = new Line();
+        } else if (shapes[obj].identifier === "text") {
+            shape = new Text(undefined, undefined, undefined, undefined, undefined, undefined, settings.viewContext);
+        } else if (shapes[obj].identifier === "pen") {
+            shape = new Pen();
+        }
+
+        // Override properties of the shape and add to shapes
+        if (shape) {
+            shape.override(shapes[obj]);
+            settings.shapes.push(shape);
+        }
+    }
+
+    // Redraw the view canvas
+    redraw(settings.viewCanvas[0], settings.viewContext, settings.shapes);
 });

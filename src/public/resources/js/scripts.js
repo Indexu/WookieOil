@@ -62,6 +62,11 @@ $("#redo").on("click", function () {
     redo(settings.viewCanvas[0], settings.viewContext);
 });
 
+// Color change
+$("#colorPicker").on("change", function () {
+    settings.nextColor = $(this).val();
+});
+
 // Stroke size
 $("#strokeSize").on("change", function () {
     settings.strokeSize = $(this).val();
@@ -132,18 +137,83 @@ $("#textArea").on("keyup", function (e) {
     }
 });
 
-// Color change
-$("#colorPicker").on("change", function () {
-    settings.nextColor = $(this).val();
+// Click on save button
+$("#saveButton").on("click", function () {
+    var saveName = $("#saveName").val();
+
+    var postData = JSON.stringify({
+        title: saveName,
+        content: settings.shapes
+    });
+
+    $.ajax({
+        type: "POST",
+        url: "/api/drawings",
+        data: postData,
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (data) {
+            console.log(data);
+        },
+        failure: function (errMsg) {
+            console.log(errMsg);
+        }
+    });
+});
+
+// Click on load button
+$("#loadButton").on("click", function () {
+    // Empty shapes
+    settings.shapes = [];
+
+    // Parse JSON string
+    var shapes = JSON.parse(); // TODO: Give JSON string
+
+    // Loop over objects
+    for (var obj in shapes) {
+        var shape = undefined;
+
+        // Identify the current object
+        if (shapes[obj].identifier === "rectangle") {
+            shape = new Rectangle();
+        } else if (shapes[obj].identifier === "circle") {
+            shape = new Circle();
+        } else if (shapes[obj].identifier === "line") {
+            shape = new Line();
+        } else if (shapes[obj].identifier === "text") {
+            shape = new Text(undefined, undefined, undefined, undefined, undefined, undefined, settings.viewContext);
+        } else if (shapes[obj].identifier === "pen") {
+            shape = new Pen();
+        }
+
+        // Override properties of the shape and add to shapes
+        if (shape) {
+            shape.override(shapes[obj]);
+            settings.shapes.push(shape);
+        }
+    }
+
+    // Redraw the view canvas
+    redraw(settings.viewCanvas[0], settings.viewContext, settings.shapes);
 });
 class Shape {
-    constructor(x, y, color, strokeSize = undefined) {
+    constructor(x, y, color, identifier, strokeSize = undefined) {
         this.x = x;
         this.y = y;
         this.endX = x;
         this.endY = y;
         this.color = color;
+        this.identifier = identifier;
         this.strokeSize = strokeSize;
+    }
+
+    // Override every value in this object with the values of obj
+    // Reference: Oliver Moran @ StackOverflow (http://stackoverflow.com/users/681800/oliver-moran)
+    // http://stackoverflow.com/questions/5873624/parse-json-string-into-a-particular-object-prototype-in-javascript
+    override(obj) {
+        for (var prop in obj) {
+            this[prop] = obj[prop];
+        }
     }
 }
 // Edit - mousedown
@@ -481,7 +551,7 @@ function showTextarea(e, textarea) {
 }
 class Circle extends Shape {
     constructor(x, y, color, strokeSize) {
-        super(x, y, color, strokeSize);
+        super(x, y, color, "circle", strokeSize);
     }
 
     setEnd(x, y) {
@@ -678,7 +748,7 @@ class Circle extends Shape {
 }
 class Line extends Shape {
     constructor(x, y, color, strokeSize) {
-        super(x, y, color, strokeSize);
+        super(x, y, color, "line", strokeSize);
     }
 
     setEnd(x, y) {
@@ -764,7 +834,7 @@ class Line extends Shape {
 }
 class Pen extends Shape {
     constructor(x, y, color, strokeSize) {
-        super(x, y, color, strokeSize);
+        super(x, y, color, "pen", strokeSize);
 
         this.points = [{
             x: x,
@@ -877,7 +947,7 @@ class Pen extends Shape {
 }
 class Rectangle extends Shape {
     constructor(x, y, color, strokeSize) {
-        super(x, y, color, strokeSize);
+        super(x, y, color, "rectangle", strokeSize);
     }
 
     setEnd(x, y) {
@@ -928,7 +998,7 @@ class Rectangle extends Shape {
 }
 class Text extends Shape {
     constructor(x, y, color, text, font, px, context) {
-        super(x, y, color);
+        super(x, y, color, "text");
 
         context.font = font;
 

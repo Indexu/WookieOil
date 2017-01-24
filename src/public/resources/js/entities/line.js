@@ -1,6 +1,6 @@
 class Line extends Shape {
     constructor(x, y, color, strokeSize) {
-        super(x, y, color, strokeSize);
+        super(x, y, color, "line", strokeSize);
     }
 
     setEnd(x, y) {
