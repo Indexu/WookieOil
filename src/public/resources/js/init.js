@@ -101,6 +101,10 @@ $("#textArea").on("keyup", function (e) {
 
         // Enable undo
         enableUndo(true);
+
+        // Empty and disable redo
+        settings.redo = [];
+        enableRedo(false);
     }
 });
 
