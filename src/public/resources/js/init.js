@@ -4,6 +4,7 @@ var settings = {
     editCanvas: $("#editCanvas"),
     editContext: $("#editCanvas")[0].getContext("2d"),
     textarea: $("#textArea"),
+    savesList: $("#saves"),
     fontSize: 36,
     font: "roboto",
     strokeSize: 10,
@@ -36,8 +37,12 @@ $(document).ready(function () {
 
     // Resize the canvases
     resize();
+
+    // Populate saves
+    populateSaves();
 });
 
+// Resize the canvas width dynamically
 $(window).on("resize", function () {
     resize();
 });
@@ -85,7 +90,6 @@ $("#fontType").on("change", function () {
 
 // Save name input
 $("#saveName").on("input", function () {
-    console.log("oil");
     // Disable button if nothing is typed
     if ($(this).val() === "") {
         $("#saveButton").addClass("disabled");
@@ -97,8 +101,8 @@ $("#saveName").on("input", function () {
 });
 
 // Click on a save
-$("#saves > a").on("click", function () {
-    $("#saves > a").removeClass("active");
+$(document).on("click", ".save", function () {
+    $(".save").removeClass("active");
     $(this).addClass("active");
 
     $("#loadButton").removeClass("disabled");
@@ -163,36 +167,54 @@ $("#saveButton").on("click", function () {
 
 // Click on load button
 $("#loadButton").on("click", function () {
-    // Empty shapes
-    settings.shapes = [];
+    // Get the ID of the save
+    var saveID = $(".save.active").attr("data-id");
 
-    // Parse JSON string
-    var shapes = JSON.parse(); // TODO: Give JSON string
+    // Get save
+    $.ajax({
+        type: "GET",
+        url: "/api/drawings/" + saveID,
+        dataType: "json",
+        success: function (data) {
+            loadSave(data.content);
+        },
+        failure: function (errMsg) {
+            console.log(errMsg);
+        }
+    });
 
-    // Loop over objects
-    for (var obj in shapes) {
-        var shape = undefined;
+    // Load the save, map to classes and redraw
+    function loadSave(shapes) {
+        // Empty shapes
+        settings.shapes = [];
 
-        // Identify the current object
-        if (shapes[obj].identifier === "rectangle") {
-            shape = new Rectangle();
-        } else if (shapes[obj].identifier === "circle") {
-            shape = new Circle();
-        } else if (shapes[obj].identifier === "line") {
-            shape = new Line();
-        } else if (shapes[obj].identifier === "text") {
-            shape = new Text(undefined, undefined, undefined, undefined, undefined, undefined, settings.viewContext);
-        } else if (shapes[obj].identifier === "pen") {
-            shape = new Pen();
+        // Loop over objects
+        for (var obj in shapes) {
+            var shape = undefined;
+
+            // Identify the current object
+            if (shapes[obj].identifier === "rectangle") {
+                shape = new Rectangle();
+            } else if (shapes[obj].identifier === "circle") {
+                shape = new Circle();
+            } else if (shapes[obj].identifier === "line") {
+                shape = new Line();
+            } else if (shapes[obj].identifier === "text") {
+                shape = new Text(undefined, undefined, undefined, undefined, undefined, undefined, settings.viewContext);
+            } else if (shapes[obj].identifier === "pen") {
+                shape = new Pen();
+            }
+
+            // Override properties of the shape and add to shapes
+            if (shape) {
+                shape.override(shapes[obj]);
+                settings.shapes.push(shape);
+            }
         }
 
-        // Override properties of the shape and add to shapes
-        if (shape) {
-            shape.override(shapes[obj]);
-            settings.shapes.push(shape);
-        }
+        // Redraw the view canvas
+        redraw(settings.viewCanvas[0], settings.viewContext, settings.shapes);
     }
 
-    // Redraw the view canvas
-    redraw(settings.viewCanvas[0], settings.viewContext, settings.shapes);
+
 });
