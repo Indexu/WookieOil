@@ -1,7 +1,29 @@
+// ======================
+// ======= Events =======
+// ======================
 // Edit - mousedown
 settings.editCanvas.on("mousedown", function (e) {
     e.preventDefault();
 
+    mouseDown(e);
+});
+
+// Edit - mousemove
+settings.editCanvas.on("mousemove", function (e) {
+    e.preventDefault();
+
+    mouseMove(e);
+});
+
+// Edit - mouseup
+settings.editCanvas.on("mouseup", function (e) {
+    mouseUp();
+});
+
+// =========================
+// ======= Functions =======
+// =========================
+function mouseDown(e) {
     // Prevent a second mouse down from resetting current drawing in progress
     if (settings.currentObj !== undefined) {
         return;
@@ -82,12 +104,9 @@ settings.editCanvas.on("mousedown", function (e) {
 
     // Assign the current object
     settings.currentObj = shape;
-});
+}
 
-// Edit - mousemove
-settings.editCanvas.on("mousemove", function (e) {
-    e.preventDefault();
-
+function mouseMove(e) {
     // Moving objects
     if (settings.moving) {
         // Old mouse coordinates
@@ -130,10 +149,9 @@ settings.editCanvas.on("mousemove", function (e) {
         // Draw the object to the edit canvas
         settings.currentObj.draw(settings.editContext);
     }
-});
+}
 
-// Edit - mouseup
-settings.editCanvas.on("mouseup", function (e) {
+function mouseUp() {
     // Reset cursor
     settings.editCanvas[0].style.cursor = "crosshair";
 
@@ -185,4 +203,4 @@ settings.editCanvas.on("mouseup", function (e) {
         settings.redo = [];
         enableRedo(false);
     }
-});
+}
