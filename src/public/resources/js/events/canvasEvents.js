@@ -1,7 +1,27 @@
+// ======================
+// ======= Events =======
+// ======================
 // Edit - mousedown
-settings.editCanvas.on("mousedown", function (e) {
+$("#editCanvas").on("mousedown", function (e) {
     e.preventDefault();
+    mouseDown(e);
+});
 
+// Edit - mousemove
+$("#editCanvas").on("mousemove", function (e) {
+    e.preventDefault();
+    mouseMove(e);
+});
+
+// Edit - mouseup
+$("#editCanvas").on("mouseup", function (e) {
+    mouseUp();
+});
+
+// =========================
+// ======= Functions =======
+// =========================
+function mouseDown(e) {
     // Prevent a second mouse down from resetting current drawing in progress
     if (settings.currentObj !== undefined) {
         return;
@@ -45,10 +65,11 @@ settings.editCanvas.on("mousedown", function (e) {
                 settings.moving = true;
 
                 // Set the cursor
-                settings.editCanvas[0].style.cursor = "move";
+                settings.editContext.canvas.style.cursor = "move";
             }
 
-            clearCanvas(settings.editCanvas[0], settings.editContext);
+            // Clear the edit canvas
+            clearCanvas(settings.editContext);
         }
 
         // No shape was selected => Select rectangle
@@ -82,12 +103,9 @@ settings.editCanvas.on("mousedown", function (e) {
 
     // Assign the current object
     settings.currentObj = shape;
-});
+}
 
-// Edit - mousemove
-settings.editCanvas.on("mousemove", function (e) {
-    e.preventDefault();
-
+function mouseMove(e) {
     // Moving objects
     if (settings.moving) {
         // Old mouse coordinates
@@ -108,12 +126,12 @@ settings.editCanvas.on("mousemove", function (e) {
             settings.shapes[index].move(deltaX, deltaY);
         }
 
-        redraw(settings.viewCanvas[0], settings.viewContext, settings.shapes);
+        redraw(settings.viewContext, settings.shapes);
     }
 
     if (settings.nextObj !== "select") {
         // Set the cursor
-        settings.editCanvas[0].style.cursor = "crosshair";
+        settings.editContext.canvas.style.cursor = "crosshair";
     }
 
     // Check if there is an object to be drawn
@@ -122,7 +140,7 @@ settings.editCanvas.on("mousemove", function (e) {
         updateMousePosition(e);
 
         // Clear edit canvas
-        clearCanvas(settings.editCanvas[0], settings.editContext);
+        clearCanvas(settings.editContext);
 
         // Set the new end position
         settings.currentObj.setEnd(settings.mouseX, settings.mouseY);
@@ -130,12 +148,11 @@ settings.editCanvas.on("mousemove", function (e) {
         // Draw the object to the edit canvas
         settings.currentObj.draw(settings.editContext);
     }
-});
+}
 
-// Edit - mouseup
-settings.editCanvas.on("mouseup", function (e) {
+function mouseUp() {
     // Reset cursor
-    settings.editCanvas[0].style.cursor = "crosshair";
+    settings.editContext.canvas.style.cursor = "crosshair";
 
     if (settings.moving) {
         settings.selectedShapeIndexes = [];
@@ -145,7 +162,7 @@ settings.editCanvas.on("mouseup", function (e) {
     // Check if there is an object
     else if (settings.currentObj !== undefined) {
         // Clear edit canvas
-        clearCanvas(settings.editCanvas[0], settings.editContext);
+        clearCanvas(settings.editContext);
 
         // Redraw everything if it is select tool
         if (settings.nextObj === "select") {
@@ -160,7 +177,7 @@ settings.editCanvas.on("mouseup", function (e) {
             // Selected object(s)
             if (settings.moving) {
                 // Set the cursor
-                settings.editCanvas[0].style.cursor = "move";
+                settings.editContext.canvas.style.cursor = "move";
             }
         }
         // Draw the object to the view canvas 
@@ -185,4 +202,4 @@ settings.editCanvas.on("mouseup", function (e) {
         settings.redo = [];
         enableRedo(false);
     }
-});
+}

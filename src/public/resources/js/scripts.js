@@ -1,7 +1,6 @@
+// Settings variable
 var settings = {
-    viewCanvas: $("#viewCanvas"),
     viewContext: $("#viewCanvas")[0].getContext("2d"),
-    editCanvas: $("#editCanvas"),
     editContext: $("#editCanvas")[0].getContext("2d"),
     textarea: $("#textArea"),
     savesList: $("#saves"),
@@ -25,14 +24,18 @@ $(document).ready(function () {
     $("#fontType").material_select();
 
     // Materialize Modals
-    $(".modal").modal();
+    $(".modal").modal({
+        complete: function () {
+            deselectAllSaves();
+        }
+    });
 
     // Materialize Tooltips
     $(".tooltipped").tooltip({
         delay: 50
     });
 
-    // Initialize minicolors colorpicker
+    // Minicolors Colorpicker
     $("#colorPicker").minicolors();
 
     // Resize the canvases
@@ -40,230 +43,6 @@ $(document).ready(function () {
 
     // Populate saves
     populateSaves();
-});
-
-// Resize the canvas width dynamically
-$(window).on("resize", function () {
-    resize();
-});
-
-// Update object based on selected tool
-$(".tool").on("click", function (e) {
-    e.preventDefault();
-    settings.nextObj = $(this).attr("data-value");
-
-    // Change color of button
-    $(".tool:not(.light-blue accent-1)").addClass("light-blue accent-1");
-    $(this).removeClass("light-blue accent-1");
-});
-
-// Download button
-$("#downloadButton").on("click", function () {
-    // Set the correct href
-    this.href = settings.viewCanvas[0].toDataURL();
-
-    // Construct today's timedate string
-    var date = new Date();
-    var currentDate = date.getFullYear() + "_" + (date.getMonth() + 1) + "_" + date.getDate() + "-" + date.getHours() + "-" + date.getMinutes() + "-" + date.getSeconds();
-
-    // Download the image
-    this.download = "WookieOil_" + currentDate + ".png";
-});
-
-// Undo button
-$("#undo").on("click", function () {
-    undo(settings.viewCanvas[0], settings.viewContext);
-});
-
-// Redo button
-$("#redo").on("click", function () {
-    redo(settings.viewCanvas[0], settings.viewContext);
-});
-
-// Color change
-$("#colorPicker").on("change", function () {
-    settings.nextColor = $(this).val();
-});
-
-// Stroke size
-$("#strokeSize").on("change", function () {
-    settings.strokeSize = $(this).val();
-});
-
-// Font size
-$("#fontSize").on("change", function () {
-    settings.fontSize = $(this).val();
-});
-
-// Font change
-$("#fontType").on("change", function () {
-    settings.font = $(this).val();
-    settings.textarea.css("font-family", settings.font);
-});
-
-// Save name input
-$("#saveName").on("input", function () {
-    // Disable button if nothing is typed
-    if ($(this).val() === "") {
-        $("#saveButton").addClass("disabled");
-    }
-    // Enable button if something is typed
-    else {
-        $("#saveButton").removeClass("disabled");
-    }
-});
-
-// Click on a save
-$(document).on("click", ".save", function () {
-    $(".save").removeClass("active");
-    $(this).addClass("active");
-
-    $("#loadButton").removeClass("disabled");
-});
-
-// Hide textbox when clicked outside
-// Reference prc322 @ StackOverflow (http://stackoverflow.com/users/659025/prc322)
-// http://stackoverflow.com/questions/1403615/use-jquery-to-hide-a-div-when-the-user-clicks-outside-of-it
-$(document).mouseup(function (e) {
-    if (!settings.textarea.is(e.target) &&
-        settings.textarea.has(e.target).length === 0) {
-        hideTextarea();
-    }
-});
-
-// Textarea enter key
-$("#textArea").on("keyup", function (e) {
-    e.preventDefault();
-    var code = (e.keyCode ? e.keyCode : e.which);
-    // Enter keycode is 13
-    if (code === 13) {
-
-        var val = $(this).val();
-
-        // Hide textarea
-        hideTextarea()
-
-        // Check for empty input
-        if (val.trim() === "") {
-            return;
-        }
-
-        // Make up the font
-        var font = settings.fontSize + "px " + settings.font;
-
-        // Create the text
-        var text = new Text(settings.mouseX, settings.mouseY + (settings.fontSize / 2), settings.nextColor, val, font, settings.fontSize, settings.viewContext);
-
-        // Draw text
-        text.draw(settings.viewContext);
-
-        // Add to shapes
-        settings.shapes.push(text);
-
-        // Enable undo
-        enableUndo(true);
-
-        // Empty and disable redo
-        settings.redo = [];
-        enableRedo(false);
-    }
-    // Escape key 
-    else if (code === 27) {
-        hideTextarea();
-    }
-});
-
-// Click on save button
-$("#saveButton").on("click", function () {
-    // Get save name
-    var saveName = $("#saveName").val();
-
-    // Construct post data
-    var postData = JSON.stringify({
-        title: saveName,
-        content: settings.shapes
-    });
-
-    // Send save to server
-    $.ajax({
-        type: "POST",
-        url: "/api/drawings",
-        data: postData,
-        contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        complete: function (data) {
-            if (data.status === 201) {
-                // Clear input box
-                $("#saveName").val("");
-                // Disable button
-                $("#saveButton").addClass("disabled");
-                // Display toast
-                Materialize.toast("Saved!", 1500);
-                // Populate saves
-                populateSaves();
-            } else {
-                console.log(data);
-            }
-        }
-    });
-});
-
-// Click on load button
-$("#loadButton").on("click", function () {
-    // Get the ID of the save and deselect the save
-    var selectedSave = $(".save.active");
-    var saveID = selectedSave.attr("data-id");
-    selectedSave.removeClass("active");
-    $("#loadButton").addClass("disabled");
-
-    // Get save
-    $.ajax({
-        type: "GET",
-        url: "/api/drawings/" + saveID,
-        dataType: "json",
-        success: function (data) {
-            loadSave(data.content);
-        },
-        failure: function (errMsg) {
-            console.log(errMsg);
-        }
-    });
-
-    // Load the save, map to classes and redraw
-    function loadSave(shapes) {
-        // Display toast
-        Materialize.toast("Loaded!", 1500);
-
-        // Empty shapes
-        settings.shapes = [];
-
-        // Loop over objects
-        for (var obj in shapes) {
-            var shape = undefined;
-
-            // Identify the current object
-            if (shapes[obj].identifier === "rectangle") {
-                shape = new Rectangle();
-            } else if (shapes[obj].identifier === "circle") {
-                shape = new Circle();
-            } else if (shapes[obj].identifier === "line") {
-                shape = new Line();
-            } else if (shapes[obj].identifier === "text") {
-                shape = new Text(undefined, undefined, undefined, undefined, undefined, undefined, settings.viewContext);
-            } else if (shapes[obj].identifier === "pen") {
-                shape = new Pen();
-            }
-
-            // Override properties of the shape and add to shapes
-            if (shape) {
-                shape.override(shapes[obj]);
-                settings.shapes.push(shape);
-            }
-        }
-
-        // Redraw the view canvas
-        redraw(settings.viewCanvas[0], settings.viewContext, settings.shapes);
-    }
 });
 class Shape {
     constructor(x, y, color, identifier, strokeSize = undefined) {
@@ -285,198 +64,10 @@ class Shape {
         }
     }
 }
-// Edit - mousedown
-settings.editCanvas.on("mousedown", function (e) {
-    e.preventDefault();
-
-    // Prevent a second mouse down from resetting current drawing in progress
-    if (settings.currentObj !== undefined) {
-        return;
-    }
-
-    // Update mouse
-    updateMousePosition(e);
-
-    var shape = undefined;
-
-    // Select tool
-    if (settings.nextObj === "select" && !settings.moving) {
-        // Find if a shape was clicked on
-        for (var i = settings.shapes.length - 1; 0 <= i && !settings.moving; i--) {
-            settings.shapes[i].draw(settings.editContext);
-
-            var clicked = false;
-
-            // Current shape is text
-            if (settings.shapes[i].constructor.name === "Text") {
-                var dummyRect = {
-                    x1: settings.mouseX,
-                    y1: settings.mouseY,
-                    x2: settings.mouseX,
-                    y2: settings.mouseY
-                }
-
-                if (settings.shapes[i].intersects(dummyRect)) {
-                    clicked = true;
-                }
-            }
-            // Else
-            else if (settings.editContext.isPointInPath(settings.mouseX, settings.mouseY) ||
-                (settings.editContext.isPointInStroke(settings.mouseX, settings.mouseY))) {
-                clicked = true;
-            }
-
-            // Add the shape to the select shapes array and start moving it
-            if (clicked) {
-                settings.selectedShapeIndexes.push(i);
-                settings.moving = true;
-
-                // Set the cursor
-                settings.editCanvas[0].style.cursor = "move";
-            }
-
-            clearCanvas(settings.editCanvas[0], settings.editContext);
-        }
-
-        // No shape was selected => Select rectangle
-        if (!settings.moving) {
-            shape = new Rectangle(settings.mouseX, settings.mouseY, "black", 1);
-        }
-    }
-    // Some shape tool
-    else if (!settings.moving) {
-        // Rectangle
-        if (settings.nextObj === "rectangle") {
-            shape = new Rectangle(settings.mouseX, settings.mouseY, settings.nextColor, settings.strokeSize);
-        }
-        // Circle
-        else if (settings.nextObj === "circle") {
-            shape = new Circle(settings.mouseX, settings.mouseY, settings.nextColor, settings.strokeSize);
-        }
-        // Line
-        else if (settings.nextObj === "line") {
-            shape = new Line(settings.mouseX, settings.mouseY, settings.nextColor, settings.strokeSize);
-        }
-        // Pen
-        else if (settings.nextObj === "pen") {
-            shape = new Pen(settings.mouseX, settings.mouseY, settings.nextColor, settings.strokeSize);
-        }
-        // Text
-        else if (settings.nextObj === "text") {
-            showTextarea(e, settings.textarea);
-        }
-    }
-
-    // Assign the current object
-    settings.currentObj = shape;
-});
-
-// Edit - mousemove
-settings.editCanvas.on("mousemove", function (e) {
-    e.preventDefault();
-
-    // Moving objects
-    if (settings.moving) {
-        // Old mouse coordinates
-        var oldX = settings.mouseX;
-        var oldY = settings.mouseY;
-
-        // Update mouse
-        updateMousePosition(e);
-
-        // Difference of coordinates
-        var deltaX = settings.mouseX - oldX;
-        var deltaY = settings.mouseY - oldY;
-
-        // Update shape placement
-        var index;
-        for (var i = 0; i < settings.selectedShapeIndexes.length; i++) {
-            index = settings.selectedShapeIndexes[i];
-            settings.shapes[index].move(deltaX, deltaY);
-        }
-
-        redraw(settings.viewCanvas[0], settings.viewContext, settings.shapes);
-    }
-
-    if (settings.nextObj !== "select") {
-        // Set the cursor
-        settings.editCanvas[0].style.cursor = "crosshair";
-    }
-
-    // Check if there is an object to be drawn
-    if (settings.currentObj !== undefined) {
-        // Update mouse
-        updateMousePosition(e);
-
-        // Clear edit canvas
-        clearCanvas(settings.editCanvas[0], settings.editContext);
-
-        // Set the new end position
-        settings.currentObj.setEnd(settings.mouseX, settings.mouseY);
-
-        // Draw the object to the edit canvas
-        settings.currentObj.draw(settings.editContext);
-    }
-});
-
-// Edit - mouseup
-settings.editCanvas.on("mouseup", function (e) {
-    // Reset cursor
-    settings.editCanvas[0].style.cursor = "crosshair";
-
-    if (settings.moving) {
-        settings.selectedShapeIndexes = [];
-        settings.moving = false;
-    }
-
-    // Check if there is an object
-    else if (settings.currentObj !== undefined) {
-        // Clear edit canvas
-        clearCanvas(settings.editCanvas[0], settings.editContext);
-
-        // Redraw everything if it is select tool
-        if (settings.nextObj === "select") {
-            // Find out which shapes the select tool intersects with
-            for (var i = settings.shapes.length - 1; 0 <= i; i--) {
-                if (settings.shapes[i].intersects(settings.currentObj)) {
-                    settings.selectedShapeIndexes.push(i);
-                    settings.moving = true;
-                }
-            }
-
-            // Selected object(s)
-            if (settings.moving) {
-                // Set the cursor
-                settings.editCanvas[0].style.cursor = "move";
-            }
-        }
-        // Draw the object to the view canvas 
-        else {
-            if ((settings.currentObj.x !== settings.mouseX || settings.currentObj.y !== settings.mouseY) ||
-                settings.nextObj === "pen") {
-                // Push to shapes
-                settings.shapes.push(settings.currentObj);
-
-                // Enable undo
-                enableUndo(true);
-
-                // Draw to view context
-                settings.currentObj.draw(settings.viewContext);
-            }
-        }
-
-        // Remove the current object
-        settings.currentObj = undefined;
-
-        // Empty and disable redo
-        settings.redo = [];
-        enableRedo(false);
-    }
-});
 // Update mouse coordinates in settings
 function updateMousePosition(e) {
 
-    var rect = settings.viewCanvas[0].getBoundingClientRect();
+    var rect = settings.viewContext.canvas.getBoundingClientRect();
 
     settings.mouseX = e.clientX - rect.left;
     settings.mouseY = e.clientY - rect.top;
@@ -489,18 +80,19 @@ function resize() {
     settings.viewContext.canvas.width = containerWidth;
     settings.editContext.canvas.width = containerWidth;
 
-    redraw(settings.viewCanvas[0], settings.viewContext, settings.shapes);
+    redraw(settings.viewContext, settings.shapes);
 }
 
 // Clear a canvas
-function clearCanvas(canvas, context) {
+function clearCanvas(context) {
+    var canvas = context.canvas;
     context.clearRect(0, 0, canvas.width, canvas.height);
 }
 
 // Clear and draw the shapes array
-function redraw(canvas, context, shapes) {
+function redraw(context, shapes) {
     // Clear
-    clearCanvas(canvas, context);
+    clearCanvas(context);
 
     // Draw everything in shapes
     for (var i = 0; i < shapes.length; i++) {
@@ -511,7 +103,7 @@ function redraw(canvas, context, shapes) {
 }
 
 // Undo
-function undo(canvas, context) {
+function undo(context) {
     // Make sure that there is something to undo
     if (settings.shapes.length !== 0) {
         // Enable redo button
@@ -524,7 +116,7 @@ function undo(canvas, context) {
         settings.redo.push(shape);
 
         // Re-draw image
-        redraw(canvas, context, settings.shapes);
+        redraw(context, settings.shapes);
 
         // Disable button if nothing to undo
         if (settings.shapes.length === 0) {
@@ -543,7 +135,7 @@ function enableUndo(enable) {
 }
 
 // Redo
-function redo(canvas, context) {
+function redo(context) {
     // Make sure that there is something to redo
     if (settings.redo.length !== 0) {
         // Enable undo button
@@ -556,7 +148,7 @@ function redo(canvas, context) {
         settings.shapes.push(shape);
 
         // Re-draw image
-        redraw(canvas, context, settings.shapes);
+        redraw(context, settings.shapes);
 
         // Disable button if nothing to undo
         if (settings.redo.length === 0) {
@@ -630,6 +222,12 @@ function hideTextarea() {
     settings.textarea.val("");
 }
 
+// Deselect all saves and disable load button
+function deselectAllSaves() {
+    $(".save").removeClass("active");
+    $("#loadButton").addClass("disabled");
+}
+
 // Populate saves list
 function populateSaves() {
     $.ajax({
@@ -637,15 +235,24 @@ function populateSaves() {
         url: "/api/drawings",
         dataType: "json",
         success: function (data) {
-            // Clear list
-            settings.savesList.html("");
+            if (data.length !== 0) {
+                // Clear list
+                settings.savesList.html("");
 
-            // Loop over saves and append
-            for (var i = 0; i < data.length; i++) {
-                var save = data[i];
-                var item = "<a href=\"#!\" class=\"collection-item save\" data-id=" + save.id + ">" + save.title + "</a>";
-                settings.savesList.append(item);
+                // Loop over saves and append
+                for (var i = data.length - 1; 0 <= i; i--) {
+                    var save = data[i];
+
+                    // Extract the date and time from the created string
+                    var time = save.created.split(".")[0].split("T");
+                    var date = time[0];
+                    time = time[1];
+
+                    var item = "<a href=\"#!\" class=\"collection-item save\" data-id=" + save.id + "><span>" + save.title + "</span><span class=\"right\">" + date + " " + time + "</span></a>";
+                    settings.savesList.append(item);
+                }
             }
+
         },
         failure: function (errMsg) {
             console.log(errMsg);
@@ -1137,5 +744,493 @@ class Text extends Shape {
 
     intersects(rect) {
         return rectsIntersect(rect, this);
+    }
+}
+// ======================
+// ======= Events =======
+// ======================
+// Edit - mousedown
+$("#editCanvas").on("mousedown", function (e) {
+    e.preventDefault();
+    mouseDown(e);
+});
+
+// Edit - mousemove
+$("#editCanvas").on("mousemove", function (e) {
+    e.preventDefault();
+    mouseMove(e);
+});
+
+// Edit - mouseup
+$("#editCanvas").on("mouseup", function (e) {
+    mouseUp();
+});
+
+// =========================
+// ======= Functions =======
+// =========================
+function mouseDown(e) {
+    // Prevent a second mouse down from resetting current drawing in progress
+    if (settings.currentObj !== undefined) {
+        return;
+    }
+
+    // Update mouse
+    updateMousePosition(e);
+
+    var shape = undefined;
+
+    // Select tool
+    if (settings.nextObj === "select" && !settings.moving) {
+        // Find if a shape was clicked on
+        for (var i = settings.shapes.length - 1; 0 <= i && !settings.moving; i--) {
+            settings.shapes[i].draw(settings.editContext);
+
+            var clicked = false;
+
+            // Current shape is text
+            if (settings.shapes[i].constructor.name === "Text") {
+                var dummyRect = {
+                    x1: settings.mouseX,
+                    y1: settings.mouseY,
+                    x2: settings.mouseX,
+                    y2: settings.mouseY
+                }
+
+                if (settings.shapes[i].intersects(dummyRect)) {
+                    clicked = true;
+                }
+            }
+            // Else
+            else if (settings.editContext.isPointInPath(settings.mouseX, settings.mouseY) ||
+                (settings.editContext.isPointInStroke(settings.mouseX, settings.mouseY))) {
+                clicked = true;
+            }
+
+            // Add the shape to the select shapes array and start moving it
+            if (clicked) {
+                settings.selectedShapeIndexes.push(i);
+                settings.moving = true;
+
+                // Set the cursor
+                settings.editContext.canvas.style.cursor = "move";
+            }
+
+            // Clear the edit canvas
+            clearCanvas(settings.editContext);
+        }
+
+        // No shape was selected => Select rectangle
+        if (!settings.moving) {
+            shape = new Rectangle(settings.mouseX, settings.mouseY, "black", 1);
+        }
+    }
+    // Some shape tool
+    else if (!settings.moving) {
+        // Rectangle
+        if (settings.nextObj === "rectangle") {
+            shape = new Rectangle(settings.mouseX, settings.mouseY, settings.nextColor, settings.strokeSize);
+        }
+        // Circle
+        else if (settings.nextObj === "circle") {
+            shape = new Circle(settings.mouseX, settings.mouseY, settings.nextColor, settings.strokeSize);
+        }
+        // Line
+        else if (settings.nextObj === "line") {
+            shape = new Line(settings.mouseX, settings.mouseY, settings.nextColor, settings.strokeSize);
+        }
+        // Pen
+        else if (settings.nextObj === "pen") {
+            shape = new Pen(settings.mouseX, settings.mouseY, settings.nextColor, settings.strokeSize);
+        }
+        // Text
+        else if (settings.nextObj === "text") {
+            showTextarea(e, settings.textarea);
+        }
+    }
+
+    // Assign the current object
+    settings.currentObj = shape;
+}
+
+function mouseMove(e) {
+    // Moving objects
+    if (settings.moving) {
+        // Old mouse coordinates
+        var oldX = settings.mouseX;
+        var oldY = settings.mouseY;
+
+        // Update mouse
+        updateMousePosition(e);
+
+        // Difference of coordinates
+        var deltaX = settings.mouseX - oldX;
+        var deltaY = settings.mouseY - oldY;
+
+        // Update shape placement
+        var index;
+        for (var i = 0; i < settings.selectedShapeIndexes.length; i++) {
+            index = settings.selectedShapeIndexes[i];
+            settings.shapes[index].move(deltaX, deltaY);
+        }
+
+        redraw(settings.viewContext, settings.shapes);
+    }
+
+    if (settings.nextObj !== "select") {
+        // Set the cursor
+        settings.editContext.canvas.style.cursor = "crosshair";
+    }
+
+    // Check if there is an object to be drawn
+    if (settings.currentObj !== undefined) {
+        // Update mouse
+        updateMousePosition(e);
+
+        // Clear edit canvas
+        clearCanvas(settings.editContext);
+
+        // Set the new end position
+        settings.currentObj.setEnd(settings.mouseX, settings.mouseY);
+
+        // Draw the object to the edit canvas
+        settings.currentObj.draw(settings.editContext);
+    }
+}
+
+function mouseUp() {
+    // Reset cursor
+    settings.editContext.canvas.style.cursor = "crosshair";
+
+    if (settings.moving) {
+        settings.selectedShapeIndexes = [];
+        settings.moving = false;
+    }
+
+    // Check if there is an object
+    else if (settings.currentObj !== undefined) {
+        // Clear edit canvas
+        clearCanvas(settings.editContext);
+
+        // Redraw everything if it is select tool
+        if (settings.nextObj === "select") {
+            // Find out which shapes the select tool intersects with
+            for (var i = settings.shapes.length - 1; 0 <= i; i--) {
+                if (settings.shapes[i].intersects(settings.currentObj)) {
+                    settings.selectedShapeIndexes.push(i);
+                    settings.moving = true;
+                }
+            }
+
+            // Selected object(s)
+            if (settings.moving) {
+                // Set the cursor
+                settings.editContext.canvas.style.cursor = "move";
+            }
+        }
+        // Draw the object to the view canvas 
+        else {
+            if ((settings.currentObj.x !== settings.mouseX || settings.currentObj.y !== settings.mouseY) ||
+                settings.nextObj === "pen") {
+                // Push to shapes
+                settings.shapes.push(settings.currentObj);
+
+                // Enable undo
+                enableUndo(true);
+
+                // Draw to view context
+                settings.currentObj.draw(settings.viewContext);
+            }
+        }
+
+        // Remove the current object
+        settings.currentObj = undefined;
+
+        // Empty and disable redo
+        settings.redo = [];
+        enableRedo(false);
+    }
+}
+// ======================
+// ======= Events =======
+// ======================
+// Resize the canvas width dynamically
+$(window).on("resize", function () {
+    resize();
+});
+
+// Update object based on selected tool
+$(".tool").on("click", function (e) {
+    e.preventDefault();
+    changeTool(this);
+});
+
+// Download button
+$("#downloadButton").on("click", function () {
+    download(this);
+});
+
+// Undo button
+$("#undo").on("click", function () {
+    undo(settings.viewContext);
+});
+
+// Redo button
+$("#redo").on("click", function () {
+    redo(settings.viewContext);
+});
+
+// Color change
+$("#colorPicker").on("change", function () {
+    settings.nextColor = $(this).val();
+});
+
+// Stroke size
+$("#strokeSize").on("change", function () {
+    settings.strokeSize = $(this).val();
+});
+
+// Font size
+$("#fontSize").on("change", function () {
+    settings.fontSize = $(this).val();
+});
+
+// Font change
+$("#fontType").on("change", function () {
+    setFont($(this).val());
+});
+
+// Save name input
+$("#saveName").on("input", function () {
+    checkSaveName($(this).val());
+});
+
+// Save name enter key
+$("#saveName").on("keyup", function (e) {
+    saveEnter(e);
+});
+
+// Click on a save
+$(document).on("click", ".save", function () {
+    deselectAllSaves();
+    $(this).addClass("active");
+
+    $("#loadButton").removeClass("disabled");
+});
+
+// Hide textbox when clicked outside
+$(document).on("mouseup", function (e) {
+    checkClickOutsideTextarea(e);
+});
+
+// Textarea enter key
+$("#textArea").on("keyup", function (e) {
+    handleTextarea(e);
+});
+
+// Click on save button
+$("#saveButton").on("click", function () {
+    save();
+});
+
+// Click on load button
+$("#loadButton").on("click", function () {
+    load();
+});
+
+// =========================
+// ======= Functions =======
+// =========================
+function changeTool(tool) {
+    settings.nextObj = $(tool).attr("data-value");
+
+    // Change color of button
+    $(".tool:not(.light-blue accent-1)").addClass("light-blue accent-1");
+    $(tool).removeClass("light-blue accent-1");
+}
+
+function download(button) {
+    // Set the correct href
+    button.href = settings.viewContext.canvas.toDataURL();
+
+    // Construct today's timedate string
+    var date = new Date();
+    var currentDate = date.getFullYear() + "_" + (date.getMonth() + 1) + "_" + date.getDate() + "-" + date.getHours() + "-" + date.getMinutes() + "-" + date.getSeconds();
+
+    // Download the image
+    button.download = "WookieOil_" + currentDate + ".png";
+}
+
+function setFont(font) {
+    settings.font = font;
+    settings.textarea.css("font-family", settings.font);
+}
+
+function checkSaveName(saveName) {
+    // Disable button if nothing is typed
+    if (saveName === "") {
+        $("#saveButton").addClass("disabled");
+    }
+    // Enable button if something is typed
+    else {
+        $("#saveButton").removeClass("disabled");
+    }
+}
+
+function checkClickOutsideTextarea(e) {
+    // Reference prc322 @ StackOverflow (http://stackoverflow.com/users/659025/prc322)
+    // http://stackoverflow.com/questions/1403615/use-jquery-to-hide-a-div-when-the-user-clicks-outside-of-it
+    if (!settings.textarea.is(e.target) &&
+        settings.textarea.has(e.target).length === 0) {
+        hideTextarea();
+    }
+}
+
+function handleTextarea(e) {
+    // Enter keycode is 13
+    if (e.keyCode === 13) {
+        // Get text
+        var val = settings.textarea.val();
+
+        // Hide textarea
+        hideTextarea()
+
+        // Check for empty input
+        if (val.trim() === "") {
+            return;
+        }
+
+        // Make up the font
+        var font = settings.fontSize + "px " + settings.font;
+
+        // Create the text
+        var text = new Text(settings.mouseX, settings.mouseY + (settings.fontSize / 2), settings.nextColor, val, font, settings.fontSize, settings.viewContext);
+
+        // Draw text
+        text.draw(settings.viewContext);
+
+        // Add to shapes
+        settings.shapes.push(text);
+
+        // Enable undo
+        enableUndo(true);
+
+        // Empty and disable redo
+        settings.redo = [];
+        enableRedo(false);
+    }
+    // Escape key 
+    else if (e.keyCode === 27) {
+        hideTextarea();
+    }
+}
+
+function saveEnter(e) {
+    if (e.keyCode === 13) {
+        save();
+        $("#saveModal").modal("close");
+    }
+}
+
+function save() {
+    // Get save name
+    var saveName = $("#saveName").val();
+
+    if (saveName.trim() === "") {
+        return;
+    }
+
+    // Construct post data
+    var postData = JSON.stringify({
+        title: saveName,
+        content: settings.shapes
+    });
+
+    // Send save to server
+    $.ajax({
+        type: "POST",
+        url: "/api/drawings",
+        data: postData,
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        complete: function (data) {
+            // For reasons unknown, the success, error, failure
+            // abort and done functions doesn't trigger
+            if (data.status === 201) {
+                // Close modal
+                $("#saveModal").modal("close");
+                // Clear input box
+                $("#saveName").val("");
+                // Disable button
+                $("#saveButton").addClass("disabled");
+                // Display toast
+                Materialize.toast("Saved!", 1500);
+                // Populate saves
+                populateSaves();
+            } else {
+                console.log(data);
+            }
+        }
+    });
+}
+
+function load() {
+    // Get the ID of the save and deselect the save
+    var selectedSave = $(".save.active");
+    var saveID = selectedSave.attr("data-id");
+    selectedSave.removeClass("active");
+    $("#loadButton").addClass("disabled");
+
+    // Get save
+    $.ajax({
+        type: "GET",
+        url: "/api/drawings/" + saveID,
+        dataType: "json",
+        success: function (data) {
+            loadSave(data.content);
+        },
+        failure: function (errMsg) {
+            console.log(errMsg);
+        }
+    });
+
+    // Load the save, map to classes and redraw
+    function loadSave(shapes) {
+        // Display toast
+        Materialize.toast("Loaded!", 1500);
+
+        // Empty shapes
+        settings.shapes = [];
+        // Empty redo
+        settings.redo = [];
+        // Disable redo
+        enableRedo(false);
+
+        // Loop over objects
+        for (var obj in shapes) {
+            var shape = undefined;
+
+            // Identify the current object
+            if (shapes[obj].identifier === "rectangle") {
+                shape = new Rectangle();
+            } else if (shapes[obj].identifier === "circle") {
+                shape = new Circle();
+            } else if (shapes[obj].identifier === "line") {
+                shape = new Line();
+            } else if (shapes[obj].identifier === "text") {
+                shape = new Text(undefined, undefined, undefined, undefined, undefined, undefined, settings.viewContext);
+            } else if (shapes[obj].identifier === "pen") {
+                shape = new Pen();
+            }
+
+            // Override properties of the shape and add to shapes
+            if (shape) {
+                shape.override(shapes[obj]);
+                settings.shapes.push(shape);
+            }
+        }
+
+        // Redraw the view canvas
+        redraw(settings.viewContext, settings.shapes);
     }
 }

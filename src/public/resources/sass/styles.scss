@@ -65,6 +65,8 @@ label {
     user-select: none;
 }
 
+#undo,
+#redo,
 .tool {
     padding: 0;
 }
@@ -72,4 +74,21 @@ label {
 .collection {
     max-height: 173px;
     overflow: auto;
+}
+
+#saveButton {
+    margin-top: 2em;
+}
+
+.collection-item.grey-text,
+.collection-item.grey-text:hover {
+    cursor: default;
+    transition: none !important;
+    background-color: white !important;
+}
+
+.github {
+    width: 20px;
+    height: auto;
+    margin-bottom: -0.3em;
 }

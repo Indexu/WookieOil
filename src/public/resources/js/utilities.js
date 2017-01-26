@@ -1,7 +1,7 @@
 // Update mouse coordinates in settings
 function updateMousePosition(e) {
 
-    var rect = settings.viewCanvas[0].getBoundingClientRect();
+    var rect = settings.viewContext.canvas.getBoundingClientRect();
 
     settings.mouseX = e.clientX - rect.left;
     settings.mouseY = e.clientY - rect.top;
@@ -14,18 +14,19 @@ function resize() {
     settings.viewContext.canvas.width = containerWidth;
     settings.editContext.canvas.width = containerWidth;
 
-    redraw(settings.viewCanvas[0], settings.viewContext, settings.shapes);
+    redraw(settings.viewContext, settings.shapes);
 }
 
 // Clear a canvas
-function clearCanvas(canvas, context) {
+function clearCanvas(context) {
+    var canvas = context.canvas;
     context.clearRect(0, 0, canvas.width, canvas.height);
 }
 
 // Clear and draw the shapes array
-function redraw(canvas, context, shapes) {
+function redraw(context, shapes) {
     // Clear
-    clearCanvas(canvas, context);
+    clearCanvas(context);
 
     // Draw everything in shapes
     for (var i = 0; i < shapes.length; i++) {
@@ -36,7 +37,7 @@ function redraw(canvas, context, shapes) {
 }
 
 // Undo
-function undo(canvas, context) {
+function undo(context) {
     // Make sure that there is something to undo
     if (settings.shapes.length !== 0) {
         // Enable redo button
@@ -49,7 +50,7 @@ function undo(canvas, context) {
         settings.redo.push(shape);
 
         // Re-draw image
-        redraw(canvas, context, settings.shapes);
+        redraw(context, settings.shapes);
 
         // Disable button if nothing to undo
         if (settings.shapes.length === 0) {
@@ -68,7 +69,7 @@ function enableUndo(enable) {
 }
 
 // Redo
-function redo(canvas, context) {
+function redo(context) {
     // Make sure that there is something to redo
     if (settings.redo.length !== 0) {
         // Enable undo button
@@ -81,7 +82,7 @@ function redo(canvas, context) {
         settings.shapes.push(shape);
 
         // Re-draw image
-        redraw(canvas, context, settings.shapes);
+        redraw(context, settings.shapes);
 
         // Disable button if nothing to undo
         if (settings.redo.length === 0) {
@@ -155,6 +156,12 @@ function hideTextarea() {
     settings.textarea.val("");
 }
 
+// Deselect all saves and disable load button
+function deselectAllSaves() {
+    $(".save").removeClass("active");
+    $("#loadButton").addClass("disabled");
+}
+
 // Populate saves list
 function populateSaves() {
     $.ajax({
@@ -162,15 +169,24 @@ function populateSaves() {
         url: "/api/drawings",
         dataType: "json",
         success: function (data) {
-            // Clear list
-            settings.savesList.html("");
+            if (data.length !== 0) {
+                // Clear list
+                settings.savesList.html("");
 
-            // Loop over saves and append
-            for (var i = 0; i < data.length; i++) {
-                var save = data[i];
-                var item = "<a href=\"#!\" class=\"collection-item save\" data-id=" + save.id + ">" + save.title + "</a>";
-                settings.savesList.append(item);
+                // Loop over saves and append
+                for (var i = data.length - 1; 0 <= i; i--) {
+                    var save = data[i];
+
+                    // Extract the date and time from the created string
+                    var time = save.created.split(".")[0].split("T");
+                    var date = time[0];
+                    time = time[1];
+
+                    var item = "<a href=\"#!\" class=\"collection-item save\" data-id=" + save.id + "><span>" + save.title + "</span><span class=\"right\">" + date + " " + time + "</span></a>";
+                    settings.savesList.append(item);
+                }
             }
+
         },
         failure: function (errMsg) {
             console.log(errMsg);
