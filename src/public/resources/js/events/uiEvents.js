@@ -19,12 +19,12 @@ $("#downloadButton").on("click", function () {
 
 // Undo button
 $("#undo").on("click", function () {
-    undo(settings.viewCanvas[0], settings.viewContext);
+    undo(settings.viewContext);
 });
 
 // Redo button
 $("#redo").on("click", function () {
-    redo(settings.viewCanvas[0], settings.viewContext);
+    redo(settings.viewContext);
 });
 
 // Color change
@@ -50,6 +50,11 @@ $("#fontType").on("change", function () {
 // Save name input
 $("#saveName").on("input", function () {
     checkSaveName($(this).val());
+});
+
+// Save name enter key
+$("#saveName").on("keyup", function (e) {
+    saveEnter(e);
 });
 
 // Click on a save
@@ -90,7 +95,7 @@ function changeTool(tool) {
 
 function download(button) {
     // Set the correct href
-    button.href = settings.viewCanvas[0].toDataURL();
+    button.href = settings.viewContext.canvas.toDataURL();
 
     // Construct today's timedate string
     var date = new Date();
@@ -133,9 +138,8 @@ function checkClickOutsideTextarea(e) {
 }
 
 function handleTextarea(e) {
-    var code = (e.keyCode ? e.keyCode : e.which);
     // Enter keycode is 13
-    if (code === 13) {
+    if (e.keyCode === 13) {
         // Get text
         var val = settings.textarea.val();
 
@@ -167,14 +171,25 @@ function handleTextarea(e) {
         enableRedo(false);
     }
     // Escape key 
-    else if (code === 27) {
+    else if (e.keyCode === 27) {
         hideTextarea();
+    }
+}
+
+function saveEnter(e) {
+    if (e.keyCode === 13) {
+        save();
+        $("#saveModal").modal("close");
     }
 }
 
 function save() {
     // Get save name
     var saveName = $("#saveName").val();
+
+    if (saveName.trim() === "") {
+        return;
+    }
 
     // Construct post data
     var postData = JSON.stringify({
@@ -193,6 +208,8 @@ function save() {
             // For reasons unknown, the success, error, failure
             // abort and done functions doesn't trigger
             if (data.status === 201) {
+                // Close modal
+                $("#saveModal").modal("close");
                 // Clear input box
                 $("#saveName").val("");
                 // Disable button
@@ -261,6 +278,6 @@ function load() {
         }
 
         // Redraw the view canvas
-        redraw(settings.viewCanvas[0], settings.viewContext, settings.shapes);
+        redraw(settings.viewContext, settings.shapes);
     }
 }

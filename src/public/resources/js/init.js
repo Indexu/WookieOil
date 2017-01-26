@@ -1,8 +1,6 @@
 // Settings variable
 var settings = {
-    viewCanvas: $("#viewCanvas"),
     viewContext: $("#viewCanvas")[0].getContext("2d"),
-    editCanvas: $("#editCanvas"),
     editContext: $("#editCanvas")[0].getContext("2d"),
     textarea: $("#textArea"),
     savesList: $("#saves"),
@@ -33,7 +31,7 @@ $(document).ready(function () {
         delay: 50
     });
 
-    // Initialize minicolors colorpicker
+    // Minicolors Colorpicker
     $("#colorPicker").minicolors();
 
     // Resize the canvases

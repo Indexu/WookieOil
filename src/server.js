@@ -30,7 +30,7 @@ var db = {
 
 function listItems(collection) {
     var result = _.map(collection, (d) => {
-        return _.pick(d, "title", "id")
+        return _.pick(d, "created", "title", "id")
     });
     return result;
 }

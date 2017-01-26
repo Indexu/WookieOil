@@ -75,3 +75,13 @@ label {
     max-height: 173px;
     overflow: auto;
 }
+
+#saveButton {
+    margin-top: 2em;
+}
+
+.collection-item.grey-text:hover {
+    cursor: default;
+    transition: none;
+    background-color: white;
+}

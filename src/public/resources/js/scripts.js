@@ -1,8 +1,6 @@
 // Settings variable
 var settings = {
-    viewCanvas: $("#viewCanvas"),
     viewContext: $("#viewCanvas")[0].getContext("2d"),
-    editCanvas: $("#editCanvas"),
     editContext: $("#editCanvas")[0].getContext("2d"),
     textarea: $("#textArea"),
     savesList: $("#saves"),
@@ -33,7 +31,7 @@ $(document).ready(function () {
         delay: 50
     });
 
-    // Initialize minicolors colorpicker
+    // Minicolors Colorpicker
     $("#colorPicker").minicolors();
 
     // Resize the canvases
@@ -65,7 +63,7 @@ class Shape {
 // Update mouse coordinates in settings
 function updateMousePosition(e) {
 
-    var rect = settings.viewCanvas[0].getBoundingClientRect();
+    var rect = settings.viewContext.canvas.getBoundingClientRect();
 
     settings.mouseX = e.clientX - rect.left;
     settings.mouseY = e.clientY - rect.top;
@@ -78,18 +76,19 @@ function resize() {
     settings.viewContext.canvas.width = containerWidth;
     settings.editContext.canvas.width = containerWidth;
 
-    redraw(settings.viewCanvas[0], settings.viewContext, settings.shapes);
+    redraw(settings.viewContext, settings.shapes);
 }
 
 // Clear a canvas
-function clearCanvas(canvas, context) {
+function clearCanvas(context) {
+    var canvas = context.canvas;
     context.clearRect(0, 0, canvas.width, canvas.height);
 }
 
 // Clear and draw the shapes array
-function redraw(canvas, context, shapes) {
+function redraw(context, shapes) {
     // Clear
-    clearCanvas(canvas, context);
+    clearCanvas(context);
 
     // Draw everything in shapes
     for (var i = 0; i < shapes.length; i++) {
@@ -100,7 +99,7 @@ function redraw(canvas, context, shapes) {
 }
 
 // Undo
-function undo(canvas, context) {
+function undo(context) {
     // Make sure that there is something to undo
     if (settings.shapes.length !== 0) {
         // Enable redo button
@@ -113,7 +112,7 @@ function undo(canvas, context) {
         settings.redo.push(shape);
 
         // Re-draw image
-        redraw(canvas, context, settings.shapes);
+        redraw(context, settings.shapes);
 
         // Disable button if nothing to undo
         if (settings.shapes.length === 0) {
@@ -132,7 +131,7 @@ function enableUndo(enable) {
 }
 
 // Redo
-function redo(canvas, context) {
+function redo(context) {
     // Make sure that there is something to redo
     if (settings.redo.length !== 0) {
         // Enable undo button
@@ -145,7 +144,7 @@ function redo(canvas, context) {
         settings.shapes.push(shape);
 
         // Re-draw image
-        redraw(canvas, context, settings.shapes);
+        redraw(context, settings.shapes);
 
         // Disable button if nothing to undo
         if (settings.redo.length === 0) {
@@ -226,15 +225,24 @@ function populateSaves() {
         url: "/api/drawings",
         dataType: "json",
         success: function (data) {
-            // Clear list
-            settings.savesList.html("");
+            if (data.length !== 0) {
+                // Clear list
+                settings.savesList.html("");
+                console.log(data);
+                // Loop over saves and append
+                for (var i = data.length - 1; 0 <= i; i--) {
+                    var save = data[i];
 
-            // Loop over saves and append
-            for (var i = 0; i < data.length; i++) {
-                var save = data[i];
-                var item = "<a href=\"#!\" class=\"collection-item save\" data-id=" + save.id + ">" + save.title + "</a>";
-                settings.savesList.append(item);
+                    // Extract the date and time from the created string
+                    var time = save.created.split(".")[0].split("T");
+                    var date = time[0];
+                    time = time[1];
+
+                    var item = "<a href=\"#!\" class=\"collection-item save\" data-id=" + save.id + "><span>" + save.title + "</span><span class=\"right\">" + date + " " + time + "</span></a>";
+                    settings.savesList.append(item);
+                }
             }
+
         },
         failure: function (errMsg) {
             console.log(errMsg);
@@ -732,21 +740,19 @@ class Text extends Shape {
 // ======= Events =======
 // ======================
 // Edit - mousedown
-settings.editCanvas.on("mousedown", function (e) {
+$("#editCanvas").on("mousedown", function (e) {
     e.preventDefault();
-
     mouseDown(e);
 });
 
 // Edit - mousemove
-settings.editCanvas.on("mousemove", function (e) {
+$("#editCanvas").on("mousemove", function (e) {
     e.preventDefault();
-
     mouseMove(e);
 });
 
 // Edit - mouseup
-settings.editCanvas.on("mouseup", function (e) {
+$("#editCanvas").on("mouseup", function (e) {
     mouseUp();
 });
 
@@ -797,10 +803,11 @@ function mouseDown(e) {
                 settings.moving = true;
 
                 // Set the cursor
-                settings.editCanvas[0].style.cursor = "move";
+                settings.editContext.canvas.style.cursor = "move";
             }
 
-            clearCanvas(settings.editCanvas[0], settings.editContext);
+            // Clear the edit canvas
+            clearCanvas(settings.editContext);
         }
 
         // No shape was selected => Select rectangle
@@ -857,12 +864,12 @@ function mouseMove(e) {
             settings.shapes[index].move(deltaX, deltaY);
         }
 
-        redraw(settings.viewCanvas[0], settings.viewContext, settings.shapes);
+        redraw(settings.viewContext, settings.shapes);
     }
 
     if (settings.nextObj !== "select") {
         // Set the cursor
-        settings.editCanvas[0].style.cursor = "crosshair";
+        settings.editContext.canvas.style.cursor = "crosshair";
     }
 
     // Check if there is an object to be drawn
@@ -871,7 +878,7 @@ function mouseMove(e) {
         updateMousePosition(e);
 
         // Clear edit canvas
-        clearCanvas(settings.editCanvas[0], settings.editContext);
+        clearCanvas(settings.editContext);
 
         // Set the new end position
         settings.currentObj.setEnd(settings.mouseX, settings.mouseY);
@@ -883,7 +890,7 @@ function mouseMove(e) {
 
 function mouseUp() {
     // Reset cursor
-    settings.editCanvas[0].style.cursor = "crosshair";
+    settings.editContext.canvas.style.cursor = "crosshair";
 
     if (settings.moving) {
         settings.selectedShapeIndexes = [];
@@ -893,7 +900,7 @@ function mouseUp() {
     // Check if there is an object
     else if (settings.currentObj !== undefined) {
         // Clear edit canvas
-        clearCanvas(settings.editCanvas[0], settings.editContext);
+        clearCanvas(settings.editContext);
 
         // Redraw everything if it is select tool
         if (settings.nextObj === "select") {
@@ -908,7 +915,7 @@ function mouseUp() {
             // Selected object(s)
             if (settings.moving) {
                 // Set the cursor
-                settings.editCanvas[0].style.cursor = "move";
+                settings.editContext.canvas.style.cursor = "move";
             }
         }
         // Draw the object to the view canvas 
@@ -955,12 +962,12 @@ $("#downloadButton").on("click", function () {
 
 // Undo button
 $("#undo").on("click", function () {
-    undo(settings.viewCanvas[0], settings.viewContext);
+    undo(settings.viewContext);
 });
 
 // Redo button
 $("#redo").on("click", function () {
-    redo(settings.viewCanvas[0], settings.viewContext);
+    redo(settings.viewContext);
 });
 
 // Color change
@@ -986,6 +993,11 @@ $("#fontType").on("change", function () {
 // Save name input
 $("#saveName").on("input", function () {
     checkSaveName($(this).val());
+});
+
+// Save name enter key
+$("#saveName").on("keyup", function (e) {
+    saveEnter(e);
 });
 
 // Click on a save
@@ -1026,7 +1038,7 @@ function changeTool(tool) {
 
 function download(button) {
     // Set the correct href
-    button.href = settings.viewCanvas[0].toDataURL();
+    button.href = settings.viewContext.canvas.toDataURL();
 
     // Construct today's timedate string
     var date = new Date();
@@ -1069,9 +1081,8 @@ function checkClickOutsideTextarea(e) {
 }
 
 function handleTextarea(e) {
-    var code = (e.keyCode ? e.keyCode : e.which);
     // Enter keycode is 13
-    if (code === 13) {
+    if (e.keyCode === 13) {
         // Get text
         var val = settings.textarea.val();
 
@@ -1103,14 +1114,25 @@ function handleTextarea(e) {
         enableRedo(false);
     }
     // Escape key 
-    else if (code === 27) {
+    else if (e.keyCode === 27) {
         hideTextarea();
+    }
+}
+
+function saveEnter(e) {
+    if (e.keyCode === 13) {
+        save();
+        $("#saveModal").modal("close");
     }
 }
 
 function save() {
     // Get save name
     var saveName = $("#saveName").val();
+
+    if (saveName.trim() === "") {
+        return;
+    }
 
     // Construct post data
     var postData = JSON.stringify({
@@ -1129,6 +1151,8 @@ function save() {
             // For reasons unknown, the success, error, failure
             // abort and done functions doesn't trigger
             if (data.status === 201) {
+                // Close modal
+                $("#saveModal").modal("close");
                 // Clear input box
                 $("#saveName").val("");
                 // Disable button
@@ -1197,6 +1221,6 @@ function load() {
         }
 
         // Redraw the view canvas
-        redraw(settings.viewCanvas[0], settings.viewContext, settings.shapes);
+        redraw(settings.viewContext, settings.shapes);
     }
 }
