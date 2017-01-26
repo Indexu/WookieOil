@@ -149,6 +149,12 @@ function showTextarea(e, textarea) {
     textarea.focus();
 }
 
+// Hide and reset textarea
+function hideTextarea() {
+    settings.textarea.hide();
+    settings.textarea.val("");
+}
+
 // Populate saves list
 function populateSaves() {
     $.ajax({
