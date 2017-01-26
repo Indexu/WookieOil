@@ -195,6 +195,8 @@ $("#saveButton").on("click", function () {
             if (data.status === 201) {
                 // Clear input box
                 $("#saveName").val("");
+                // Disable button
+                $("#saveButton").addClass("disabled");
                 // Display toast
                 Materialize.toast("Saved!", 1500);
                 // Populate saves
