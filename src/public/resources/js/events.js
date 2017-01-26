@@ -2,6 +2,11 @@
 settings.editCanvas.on("mousedown", function (e) {
     e.preventDefault();
 
+    // Prevent a second mouse down from resetting current drawing in progress
+    if (settings.currentObj !== undefined) {
+        return;
+    }
+
     // Update mouse
     updateMousePosition(e);
 

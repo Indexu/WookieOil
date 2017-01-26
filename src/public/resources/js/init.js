@@ -7,7 +7,7 @@ var settings = {
     savesList: $("#saves"),
     fontSize: 36,
     font: "roboto",
-    strokeSize: 10,
+    strokeSize: 8,
     nextObj: "pen",
     nextColor: "black",
     currentObj: undefined,
@@ -55,6 +55,19 @@ $(".tool").on("click", function (e) {
     // Change color of button
     $(".tool:not(.light-blue accent-1)").addClass("light-blue accent-1");
     $(this).removeClass("light-blue accent-1");
+});
+
+// Download button
+$("#downloadButton").on("click", function () {
+    // Set the correct href
+    this.href = settings.viewCanvas[0].toDataURL();
+
+    // Construct today's timedate string
+    var date = new Date();
+    var currentDate = date.getFullYear() + "_" + (date.getMonth() + 1) + "_" + date.getDate() + "-" + date.getHours() + "-" + date.getMinutes() + "-" + date.getSeconds();
+
+    // Download the image
+    this.download = "WookieOil_" + currentDate + ".png";
 });
 
 // Undo button
@@ -108,23 +121,38 @@ $(document).on("click", ".save", function () {
     $("#loadButton").removeClass("disabled");
 });
 
+// Hide textbox when clicked outside
+// Reference prc322 @ StackOverflow (http://stackoverflow.com/users/659025/prc322)
+// http://stackoverflow.com/questions/1403615/use-jquery-to-hide-a-div-when-the-user-clicks-outside-of-it
+$(document).mouseup(function (e) {
+    if (!settings.textarea.is(e.target) &&
+        settings.textarea.has(e.target).length === 0) {
+        hideTextarea();
+    }
+});
+
 // Textarea enter key
 $("#textArea").on("keyup", function (e) {
     e.preventDefault();
     var code = (e.keyCode ? e.keyCode : e.which);
     // Enter keycode is 13
     if (code === 13) {
-        // Hide text area
-        $(this).hide();
+
+        var val = $(this).val();
+
+        // Hide textarea
+        hideTextarea()
+
+        // Check for empty input
+        if (val.trim() === "") {
+            return;
+        }
 
         // Make up the font
         var font = settings.fontSize + "px " + settings.font;
 
         // Create the text
-        var text = new Text(settings.mouseX, settings.mouseY + (settings.fontSize / 2), settings.nextColor, $(this).val(), font, settings.fontSize, settings.viewContext);
-
-        // Reset textarea
-        $(this).val("");
+        var text = new Text(settings.mouseX, settings.mouseY + (settings.fontSize / 2), settings.nextColor, val, font, settings.fontSize, settings.viewContext);
 
         // Draw text
         text.draw(settings.viewContext);
@@ -139,36 +167,52 @@ $("#textArea").on("keyup", function (e) {
         settings.redo = [];
         enableRedo(false);
     }
+    // Escape key 
+    else if (code === 27) {
+        hideTextarea();
+    }
 });
 
 // Click on save button
 $("#saveButton").on("click", function () {
+    // Get save name
     var saveName = $("#saveName").val();
 
+    // Construct post data
     var postData = JSON.stringify({
         title: saveName,
         content: settings.shapes
     });
 
+    // Send save to server
     $.ajax({
         type: "POST",
         url: "/api/drawings",
         data: postData,
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        success: function (data) {
-            console.log(data);
-        },
-        failure: function (errMsg) {
-            console.log(errMsg);
+        complete: function (data) {
+            if (data.status === 201) {
+                // Clear input box
+                $("#saveName").val("");
+                // Display toast
+                Materialize.toast("Saved!", 1500);
+                // Populate saves
+                populateSaves();
+            } else {
+                console.log(data);
+            }
         }
     });
 });
 
 // Click on load button
 $("#loadButton").on("click", function () {
-    // Get the ID of the save
-    var saveID = $(".save.active").attr("data-id");
+    // Get the ID of the save and deselect the save
+    var selectedSave = $(".save.active");
+    var saveID = selectedSave.attr("data-id");
+    selectedSave.removeClass("active");
+    $("#loadButton").addClass("disabled");
 
     // Get save
     $.ajax({
@@ -185,6 +229,9 @@ $("#loadButton").on("click", function () {
 
     // Load the save, map to classes and redraw
     function loadSave(shapes) {
+        // Display toast
+        Materialize.toast("Loaded!", 1500);
+
         // Empty shapes
         settings.shapes = [];
 
@@ -215,6 +262,4 @@ $("#loadButton").on("click", function () {
         // Redraw the view canvas
         redraw(settings.viewCanvas[0], settings.viewContext, settings.shapes);
     }
-
-
 });

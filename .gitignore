@@ -15,3 +15,7 @@ node_modules
 # Visual Studio Code #
 ######################
 .vscode
+
+# Personal files #
+##################
+start

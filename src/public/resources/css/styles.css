@@ -35,7 +35,8 @@ textarea {
   width: 300px;
   resize: none;
   background-color: #fcfcfc;
-  font-family: "Roboto"; }
+  font-family: "Roboto";
+  z-index: 999; }
 
 .sp-palette {
   max-width: 200px; }
