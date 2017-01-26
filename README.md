@@ -2,6 +2,24 @@
 
 A simple to use HTML5 drawing application.
 
+## Features
+
+* Tools
+    * Rectangle
+    * Circle
+    * Line
+    * Pen
+    * Text
+    * Select
+* Undo and redo drawn shapes
+* Adjust font, font weight, line/stroke width and color
+* Save and load your drawings
+    * Stored locally on the server, lost upon server shutdown
+* Selecting multiple elements of different shapes
+* Precise detection of circle/ellipse selection
+* Download your drawing locally to transparent .png format
+* Beautiful and responsive UI
+
 ## Getting Started
 
 In order to run WookieOil on your own machine, you will need [node.js](https://nodejs.org/en/download/) in order to use npm to install the dependencies and run the server.
@@ -53,3 +71,4 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 ## Acknowledgments
 
 * Special thanks to Materialize for making what is probably, in our opinion, the best CSS/JS framework to date.
+* Special thanks to [Henning Úlfarsson](https://github.com/ulfarsson/) for teaching us calculus.
