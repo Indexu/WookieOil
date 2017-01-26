@@ -156,6 +156,12 @@ function hideTextarea() {
     settings.textarea.val("");
 }
 
+// Deselect all saves and disable load button
+function deselectAllSaves() {
+    $(".save").removeClass("active");
+    $("#loadButton").addClass("disabled");
+}
+
 // Populate saves list
 function populateSaves() {
     $.ajax({
@@ -166,7 +172,7 @@ function populateSaves() {
             if (data.length !== 0) {
                 // Clear list
                 settings.savesList.html("");
-                console.log(data);
+
                 // Loop over saves and append
                 for (var i = data.length - 1; 0 <= i; i--) {
                     var save = data[i];

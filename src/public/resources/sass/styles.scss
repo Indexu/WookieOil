@@ -80,8 +80,15 @@ label {
     margin-top: 2em;
 }
 
+.collection-item.grey-text,
 .collection-item.grey-text:hover {
     cursor: default;
-    transition: none;
-    background-color: white;
+    transition: none !important;
+    background-color: white !important;
+}
+
+.github {
+    width: 20px;
+    height: auto;
+    margin-bottom: -0.3em;
 }

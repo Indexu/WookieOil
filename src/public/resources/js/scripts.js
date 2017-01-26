@@ -24,7 +24,11 @@ $(document).ready(function () {
     $("#fontType").material_select();
 
     // Materialize Modals
-    $(".modal").modal();
+    $(".modal").modal({
+        complete: function () {
+            deselectAllSaves();
+        }
+    });
 
     // Materialize Tooltips
     $(".tooltipped").tooltip({
@@ -218,6 +222,12 @@ function hideTextarea() {
     settings.textarea.val("");
 }
 
+// Deselect all saves and disable load button
+function deselectAllSaves() {
+    $(".save").removeClass("active");
+    $("#loadButton").addClass("disabled");
+}
+
 // Populate saves list
 function populateSaves() {
     $.ajax({
@@ -228,7 +238,7 @@ function populateSaves() {
             if (data.length !== 0) {
                 // Clear list
                 settings.savesList.html("");
-                console.log(data);
+
                 // Loop over saves and append
                 for (var i = data.length - 1; 0 <= i; i--) {
                     var save = data[i];
@@ -1002,7 +1012,10 @@ $("#saveName").on("keyup", function (e) {
 
 // Click on a save
 $(document).on("click", ".save", function () {
-    selectSave(this);
+    deselectAllSaves();
+    $(this).addClass("active");
+
+    $("#loadButton").removeClass("disabled");
 });
 
 // Hide textbox when clicked outside
@@ -1062,13 +1075,6 @@ function checkSaveName(saveName) {
     else {
         $("#saveButton").removeClass("disabled");
     }
-}
-
-function selectSave(save) {
-    $(".save").removeClass("active");
-    $(save).addClass("active");
-
-    $("#loadButton").removeClass("disabled");
 }
 
 function checkClickOutsideTextarea(e) {
@@ -1195,6 +1201,10 @@ function load() {
 
         // Empty shapes
         settings.shapes = [];
+        // Empty redo
+        settings.redo = [];
+        // Disable redo
+        enableRedo(false);
 
         // Loop over objects
         for (var obj in shapes) {

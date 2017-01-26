@@ -59,7 +59,10 @@ $("#saveName").on("keyup", function (e) {
 
 // Click on a save
 $(document).on("click", ".save", function () {
-    selectSave(this);
+    deselectAllSaves();
+    $(this).addClass("active");
+
+    $("#loadButton").removeClass("disabled");
 });
 
 // Hide textbox when clicked outside
@@ -119,13 +122,6 @@ function checkSaveName(saveName) {
     else {
         $("#saveButton").removeClass("disabled");
     }
-}
-
-function selectSave(save) {
-    $(".save").removeClass("active");
-    $(save).addClass("active");
-
-    $("#loadButton").removeClass("disabled");
 }
 
 function checkClickOutsideTextarea(e) {
@@ -252,6 +248,10 @@ function load() {
 
         // Empty shapes
         settings.shapes = [];
+        // Empty redo
+        settings.redo = [];
+        // Disable redo
+        enableRedo(false);
 
         // Loop over objects
         for (var obj in shapes) {

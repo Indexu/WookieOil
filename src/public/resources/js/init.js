@@ -24,7 +24,11 @@ $(document).ready(function () {
     $("#fontType").material_select();
 
     // Materialize Modals
-    $(".modal").modal();
+    $(".modal").modal({
+        complete: function () {
+            deselectAllSaves();
+        }
+    });
 
     // Materialize Tooltips
     $(".tooltipped").tooltip({

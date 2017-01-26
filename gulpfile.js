@@ -40,15 +40,6 @@ gulp.task("browserSync", function () {
     });
 });
 
-// Scripts - concatinate and uglify all js files
-gulp.task("scripts", function () {
-    return gulp.src("src/public/resources/js/scripts.js")
-        .pipe(plumber())
-        .pipe(concat("scripts.min.js"))
-        .pipe(uglify())
-        .pipe(gulp.dest("src/public/dist/scripts"));
-});
-
 // Dev scripts - concatinate all js files
 gulp.task("dev_scripts", function () {
 
@@ -63,20 +54,6 @@ gulp.task("dev_scripts", function () {
         .pipe(plumber())
         .pipe(concat("scripts.js"))
         .pipe(gulp.dest("src/public/resources/js"));
-});
-
-// Styles - concatinate and minify all css files
-gulp.task("styles", function () {
-    return gulp.src("src/public/resources/css/**/*.css")
-        .pipe(plumber())
-        .pipe(concat("style.min.css"))
-        .pipe(cssnano())
-        .pipe(gulp.dest("src/public/dist/css"));
-});
-
-// Build
-gulp.task("build", ["dev_scripts", "scripts", "styles"], function () {
-    // Stuff
 });
 
 // Watch
